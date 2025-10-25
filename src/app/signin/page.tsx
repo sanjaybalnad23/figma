@@ -2,19 +2,20 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
-import { register } from "../actions/auth.action";
+import { authenticate } from "../actions/auth.action";
 
-export default function SignupPage() {
-    const [errorMessage, formAction, isPending] = useActionState(register, undefined)
+export default function SigninPage() {
+    const [errorMessage, formAction, isPending] = useActionState(authenticate, undefined)
     return (
         <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-gray-200 px-4">
             <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-lg ring-1 ring-gray-100">
                 <h1 className="mb-6 text-center text-3xl font-semibold text-gray-900">
-                    Create Account
+                    Login
                 </h1>
 
                 <form className="space-y-5" action={formAction}>
                     {/* Email */}
+                    <input type="hidden" name="redirectTo" value={"/dashboard"}/>
                     <div className="relative">
                         <input
                             type="email"
@@ -57,15 +58,15 @@ export default function SignupPage() {
                         className="w-full rounded-md disabled:cursor-not-allowed bg-black px-4 py-2 text-sm font-medium text-white transition-all hover:bg-gray-800 focus:ring-2 focus:ring-black disabled:opacity-30 focus:ring-offset-2"
                         disabled={isPending}
                     >
-                        Register
+                        Login
                     </button>
                 </form>
 
 
                 <p className="mt-6 text-center text-sm text-gray-500">
-                    Already have an account?{" "}
-                    <Link href="/signin" className="font-medium text-blue-400 hover:text-blue-600 hover:underline">
-                        Log in
+                Don&apos;t have an account?{" "}
+                    <Link href="/signup" className="font-medium text-blue-400 hover:text-blue-600 hover:underline">
+                        Create one
                     </Link>
                 </p>
             {errorMessage && <p className="text-red-500 m-3">{errorMessage}</p>}

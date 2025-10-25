@@ -63,6 +63,7 @@ model User {
     accounts      Account[]
     sessions      Session[]
     posts         Post[]
+    password      String
 }
 
 model VerificationToken {
@@ -72,3 +73,4 @@ model VerificationToken {
 
     @@unique([identifier, token])
 }
+

@@ -1,7 +1,8 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
-import DiscordProvider from "next-auth/providers/discord";
-
+import Credentials from "next-auth/providers/credentials";
+import { signInSchema } from "~/schema";
+import bcrypt from "bcrypt";
 import { db } from "~/server/db";
 
 /**
@@ -32,7 +33,32 @@ declare module "next-auth" {
  */
 export const authConfig = {
   providers: [
-    DiscordProvider,
+    Credentials({
+      credentials:{
+        email:{},
+        password:{}
+      },
+      authorize:async(credentials)=>{
+        try {
+          const {email, password} = await signInSchema.parseAsync(credentials)
+
+          const user = await db.user.findUnique({
+            where:{
+              email
+            }
+          })
+
+          const passwordMatch = await bcrypt.compare(password, user?.password ?? "")
+          if(!passwordMatch) throw new Error("Invalid credentials");
+
+          return user
+
+
+        } catch (error) {
+          return null
+        }
+      }
+    }),
     /**
      * ...add more providers here.
      *
@@ -43,13 +69,16 @@ export const authConfig = {
      * @see https://next-auth.js.org/providers/github
      */
   ],
+  session:{
+    strategy:"jwt"
+  },
   adapter: PrismaAdapter(db),
   callbacks: {
-    session: ({ session, user }) => ({
+    session: ({ session, token }) => ({
       ...session,
       user: {
         ...session.user,
-        id: user.id,
+        id: token.sub,
       },
     }),
   },

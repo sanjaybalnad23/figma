@@ -1,4 +1,7 @@
 import React from 'react'
+import Canvas from '~/components/canvas/Canvas';
+import Room from '~/components/liveblocks/Room';
+
 import { auth } from '~/server/auth';
 
 type ParamsType = Promise<{id:string}>
@@ -8,6 +11,8 @@ export default async function page({params}:{params:ParamsType}) {
     const session = await auth()
     //  Implementation pending
   return (
-    <div>page</div>
+    <Room roomId={`room:${id}`}>
+        <Canvas/>
+    </Room>
   )
 }

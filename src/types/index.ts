@@ -1,23 +1,23 @@
-declare type Color = {
+export type Color = {
     r: number;
     g: number;
     b: number;
 }
 
-declare type Camera = {
+export type Camera = {
     x: number;
     y: number;
     zoom: number;
 }
 
-declare enum LayerType {
-    Rectangle,
+export enum LayerType {
+    Rectangle = 0,
     Ellipse,
     Path,
     Text
 }
 
-declare type RectangleLayer = {
+export type RectangleLayer = {
     type: LayerType.Rectangle,
     x: number
     y: number
@@ -29,7 +29,7 @@ declare type RectangleLayer = {
     cornerRadius: number
 }
 
-declare type EllipseLayer = {
+export type EllipseLayer = {
     type: LayerType.Ellipse,
     x: number
     y: number
@@ -40,7 +40,7 @@ declare type EllipseLayer = {
     opacity: number
 }
 
-declare type PathLayer = {
+export type PathLayer = {
     type: LayerType.Path
     x: number
     y: number
@@ -50,7 +50,7 @@ declare type PathLayer = {
     points: number[][]
 }
 
-declare type TextLayer = {
+export type TextLayer = {
     type: LayerType.Text
     x: number
     y: number
@@ -65,9 +65,9 @@ declare type TextLayer = {
     opacity: number
 }
 
-declare type Layer = RectangleLayer | EllipseLayer | PathLayer | TextLayer
+export type Layer = RectangleLayer | EllipseLayer | PathLayer | TextLayer
 
-declare type Point = {
+export type Point = {
     x:number
     y:number
 }

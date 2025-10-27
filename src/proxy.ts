@@ -1,7 +1,6 @@
 import { auth } from "./server/auth";
 
 export const proxy = auth((req)=>{
-    console.log("Hola")
     if(!req.auth){
         const newUrl = new URL("/signin", req.nextUrl.origin)
         return Response.redirect(newUrl)

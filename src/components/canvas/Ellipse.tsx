@@ -2,7 +2,7 @@ import type { EllipseLayer } from "~/types";
 import { rgbToHex } from "~/utils";
 
 export default function Ellipse({ id, layer }: { id: string; layer: EllipseLayer }) {
-  const {  fill, height, opacity, stroke, type, width, x, y } = layer;
+  const { fill, height, opacity, stroke, type, width, x, y } = layer;
   return (
     <g>
       <ellipse
@@ -13,7 +13,7 @@ export default function Ellipse({ id, layer }: { id: string; layer: EllipseLayer
         stroke={stroke ? rgbToHex(stroke) : "#1e1e1e"}
         opacity={opacity ?? 1}
         strokeWidth={1}
-        cx={width /2}
+        cx={width / 2}
         cy={height / 2}
         rx={height}
         ry={width}

@@ -32,8 +32,8 @@ export const env = createEnv({
     AUTH_SECRET: process.env.AUTH_SECRET,
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
-    LIVEBLOCKS_PUBLIC_KEY:process.env.LIVEBLOCKS_PUBLIC_KEY,
-    LIVEBLOCKS_SECRET_KEY:process.env.LIVEBLOCKS_SECRET_KEY,
+    LIVEBLOCKS_PUBLIC_KEY: process.env.LIVEBLOCKS_PUBLIC_KEY,
+    LIVEBLOCKS_SECRET_KEY: process.env.LIVEBLOCKS_SECRET_KEY,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

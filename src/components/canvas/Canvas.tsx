@@ -5,7 +5,16 @@ import { pointerEventToCanvasPoint, rgbToHex } from "~/utils";
 import LayerComponent from "./LayerComponent";
 import { nanoid } from "nanoid";
 import { LiveObject } from "@liveblocks/client";
-import { CanvasMode, LayerType, type Camera, type CanvasState, type EllipseLayer, type Layer, type Point, type RectangleLayer } from "~/types";
+import {
+  CanvasMode,
+  LayerType,
+  type Camera,
+  type CanvasState,
+  type EllipseLayer,
+  type Layer,
+  type Point,
+  type RectangleLayer,
+} from "~/types";
 import ToolsBar from "../toolsbar/ToolsBar";
 
 const MAX_LAYERS = 100;
@@ -14,8 +23,7 @@ export default function Canvas() {
   const roomColor = useStorage(root => root.roomColor);
   const layerIds = useStorage(root => root.layerIds);
   const [camera, setCamera] = useState<Camera>({ x: 100, y: 100, zoom: 1 });
-  const [canvasState, setCanvasState] = useState<CanvasState>({mode:CanvasMode.None});
-
+  const [canvasState, setCanvasState] = useState<CanvasState>({ mode: CanvasMode.None });
 
   const insertLayer = useMutation(
     (
@@ -55,7 +63,7 @@ export default function Canvas() {
           width: 100,
           fill: { r: 217, g: 217, b: 217 },
           stroke: { r: 217, g: 217, b: 217 },
-          opacity: 100,   
+          opacity: 100,
         });
       }
 
@@ -99,7 +107,7 @@ export default function Canvas() {
           </svg>
         </div>
       </main>
-      <ToolsBar canvasState={canvasState} setCanvasState={setCanvasState}/>
+      <ToolsBar canvasState={canvasState} setCanvasState={setCanvasState} />
     </div>
   );
 }

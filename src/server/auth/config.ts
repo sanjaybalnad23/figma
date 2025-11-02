@@ -32,35 +32,35 @@ declare module "next-auth" {
  * @see https://next-auth.js.org/configuration/options
  */
 export const authConfig = {
-  pages:{
-     signIn:"/bullebulle"
-  }
-  ,providers: [
+  pages: {
+    signIn: "/bullebulle",
+  },
+  providers: [
     Credentials({
-      credentials:{
-        email:{},
-        password:{}
+      credentials: {
+        email: {},
+        password: {},
       },
-      authorize:async(credentials)=>{
+      authorize: async credentials => {
         try {
-          const {email, password} = await signInSchema.parseAsync(credentials)
+          const { email, password } = await signInSchema.parseAsync(credentials);
 
           const user = await db.user.findUnique({
-            where:{
-              email
-            }
-          })
+            where: {
+              email,
+            },
+          });
 
-          const passwordMatch = await bcrypt.compare(password, user?.password ?? "")
-          if(!passwordMatch) throw new Error("Invalid credentials");
+          const passwordMatch = await bcrypt.compare(password, user?.password ?? "");
+          if (!passwordMatch) throw new Error("Invalid credentials");
 
-          return user
+          return user;
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
-          return null
+          return null;
         }
-      }
+      },
     }),
     /**
      * ...add more providers here.
@@ -72,8 +72,8 @@ export const authConfig = {
      * @see https://next-auth.js.org/providers/github
      */
   ],
-  session:{
-    strategy:"jwt"
+  session: {
+    strategy: "jwt",
   },
   adapter: PrismaAdapter(db),
   callbacks: {

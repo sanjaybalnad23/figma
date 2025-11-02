@@ -16,7 +16,6 @@ export default function Room({ children, roomId }: { children: React.ReactNode; 
           layers: new LiveMap<string, LiveObject<Layer>>(),
           layerIds: new LiveList<string>([]),
         }}
-        
       >
         <ClientSideSuspense
           fallback={

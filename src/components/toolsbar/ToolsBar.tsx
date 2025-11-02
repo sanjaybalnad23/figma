@@ -15,7 +15,11 @@ export default function ToolsBar({
         <SelectionButton
           canvasMode={canvasState.mode}
           isActive={canvasState.mode === CanvasMode.None}
-          onClick={canvasMode => setCanvasState({ mode: canvasMode })}
+          onClick={canvasMode =>
+            setCanvasState(
+              canvasMode === CanvasMode.Dragging ? { mode: canvasMode, origin: null } : { mode: canvasMode }
+            )
+          }
         />
       </div>
     </div>

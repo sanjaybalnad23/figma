@@ -1,6 +1,7 @@
 // Define Liveblocks types for your application
 
 import type { LiveList, LiveMap, LiveObject } from "@liveblocks/client";
+import type { Point, Color, Layer } from "~/types";
 
 // https://liveblocks.io/docs/api-reference/liveblocks-react#Typing-your-data
 declare global {

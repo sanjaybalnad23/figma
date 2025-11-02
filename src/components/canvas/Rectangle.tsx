@@ -1,4 +1,3 @@
-import React from "react";
 import type { RectangleLayer } from "~/types";
 import { rgbToHex } from "~/utils";
 
@@ -14,8 +13,8 @@ export default function Rectangle({ id, layer }: { id: string; layer: RectangleL
         stroke={stroke ? rgbToHex(stroke) : "#1e1e1e"}
         opacity={opacity}
         strokeWidth={1}
-        x={x}
-        y={y}
+        // x={x}
+        // y={y}
         rx={cornerRadius ?? 0}
         ry={cornerRadius ?? 0}
       ></rect>

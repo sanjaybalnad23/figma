@@ -71,3 +71,15 @@ export type Point = {
     x:number
     y:number
 }
+
+export type CanvasState = {
+    mode:CanvasMode.None
+} |{
+    mode:CanvasMode.Inserting,
+    layerType:LayerType.Rectangle | LayerType.Ellipse | LayerType.Path | LayerType.Text
+}
+
+export enum CanvasMode{
+    None,
+    Inserting
+}

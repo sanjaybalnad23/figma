@@ -3,6 +3,7 @@
 import { useStorage } from "@liveblocks/react"
 import Rectangle from "./Rectangle";
 import { LayerType } from "~/types";
+import Ellipse from "./Ellipse";
 
 
 
@@ -13,6 +14,9 @@ export default function LayerComponent({layerId}:{layerId:string}) {
     switch(layer.type){
         case LayerType.Rectangle:
             return <Rectangle id={layerId} layer={layer}/>
+
+        case LayerType.Ellipse:
+          return <Ellipse id={layerId} layer={layer} />
 
         default:
             return null

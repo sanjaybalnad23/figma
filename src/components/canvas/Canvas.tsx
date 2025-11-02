@@ -1,19 +1,20 @@
 "use client";
-import { useMutation, useRoom, useStorage } from "@liveblocks/react";
-import React, { useEffect } from "react";
-import { rgbToHex } from "~/utils";
+import { useMutation, useStorage } from "@liveblocks/react";
+import React, { useEffect, useState } from "react";
+import { pointerEventToCanvasPoint, rgbToHex } from "~/utils";
 import LayerComponent from "./LayerComponent";
 import { nanoid } from "nanoid";
 import { LiveObject } from "@liveblocks/client";
-import { LayerType, type Layer, type Point, type RectangleLayer } from "~/types";
+import { CanvasMode, LayerType, type Camera, type CanvasState, type EllipseLayer, type Layer, type Point, type RectangleLayer } from "~/types";
+import ToolsBar from "../toolsbar/ToolsBar";
 
 const MAX_LAYERS = 100;
 
 export default function Canvas() {
   const roomColor = useStorage(root => root.roomColor);
   const layerIds = useStorage(root => root.layerIds);
-
-
+  const [camera, setCamera] = useState<Camera>({ x: 100, y: 100, zoom: 1 });
+  const [canvasState, setCanvasState] = useState<CanvasState>({mode:CanvasMode.None});
 
 
   const insertLayer = useMutation(
@@ -45,10 +46,23 @@ export default function Canvas() {
         });
       }
 
+      if (layerType === LayerType.Ellipse) {
+        layer = new LiveObject<EllipseLayer>({
+          type: LayerType.Ellipse,
+          x: position.x,
+          y: position.y,
+          height: 100,
+          width: 100,
+          fill: { r: 217, g: 217, b: 217 },
+          stroke: { r: 217, g: 217, b: 217 },
+          opacity: 100,   
+        });
+      }
+
       if (layer) {
         liveLayerIds.push(layerId);
         liveLayers.set(layerId, layer);
-
+        console.log("Layer added to storage");
         setMyPresence({ selection: [layerId] }, { addToHistory: true });
       }
     },
@@ -56,14 +70,18 @@ export default function Canvas() {
   );
 
   useEffect(() => {
-
-    setTimeout(()=>{
-// waiting to load storage
+    setTimeout(() => {
+      // waiting to load storage
       console.log(LayerType.Rectangle);
-      insertLayer(0, { x: 100, y: 100 });
-    }, 3000)
+      insertLayer(LayerType.Rectangle, { x: 200, y: 100 });
+    }, 3000);
   }, []);
 
+  const handlePointerUp = (e: React.PointerEvent) => {
+    const point = pointerEventToCanvasPoint(e, camera);
+    console.log("HHHHHH");
+    insertLayer(LayerType.Ellipse, point);
+  };
 
   return (
     <div className=" flex h-screen w-full">
@@ -72,7 +90,7 @@ export default function Canvas() {
           className="h-full w-full touch-none"
           style={{ backgroundColor: roomColor ? rgbToHex(roomColor) : "royalblue" }}
         >
-          <svg className="h-full w-full">
+          <svg onPointerUp={handlePointerUp} className="h-full w-full">
             <g>
               {layerIds?.map(layerId => (
                 <LayerComponent key={layerId} layerId={layerId} />
@@ -81,6 +99,7 @@ export default function Canvas() {
           </svg>
         </div>
       </main>
+      <ToolsBar canvasState={canvasState} setCanvasState={setCanvasState}/>
     </div>
   );
 }

@@ -1,20 +1,18 @@
-"use client";
-
-import { useEffect, useRef, useState } from "react";
-import { CanvasMode } from "~/types";
-import IconButton from "./IconButton";
-import { BiPointer } from "react-icons/bi";
-import { RiHand } from "react-icons/ri";
+import  { useEffect, useRef, useState } from "react";
+import  { BiPointer } from "react-icons/bi";
 import { GoTriangleUp } from "react-icons/go";
+import  { RiHand } from "react-icons/ri";
+import { LayerType,  CanvasMode, type CanvasState } from "~/types";
+import IconButton from "./IconButton";
 
-export default function SelectionButton({
+export default function ShapesSelectionButton({
   isActive,
-  canvasMode,
+  canvasState,
   onClick,
 }: {
   isActive: boolean;
-  canvasMode: CanvasMode;
-  onClick: (canvasMode: CanvasMode.None | CanvasMode.Dragging) => void;
+  canvasState: CanvasState;
+  onClick: (layerType: LayerType) => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -27,19 +25,16 @@ export default function SelectionButton({
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  },[]);
+  }, []);
 
-  const handleClick = (canvasMode: CanvasMode.None | CanvasMode.Dragging) => {
-    onClick(canvasMode);
+  const handleClick = (layerType: LayerType) => {
+    onClick(layerType);
     setIsOpen(false);
   };
 
   return (
     <div className="relative flex" ref={menuRef}>
-      <IconButton isActive={isActive} onClick={() => onClick(CanvasMode.None)}>
-        {canvasMode === CanvasMode.None || (!canvasMode && <BiPointer className="size-5" />)}
-        {canvasMode === CanvasMode.Dragging && <RiHand className="size-5" />}
-        {canvasMode === CanvasMode.None && <BiPointer className="size-5" />}
+      <IconButton isActive={isActive} onClick={() => onClick(LayerType.Rectangle)}>
       </IconButton>
       <button onClick={() => setIsOpen(!isOpen)} className="ml-1 rotate-180">
         <GoTriangleUp />
@@ -48,7 +43,7 @@ export default function SelectionButton({
         <div className="absolute -top-20 mt-1 min-w-[150px] bg-[#1e1e1e] p-2 shadow-lg">
           <button
             className={`${canvasMode === CanvasMode.None ? "bg-blue-500" : ""} flex w-full items-center rounded-md p-1 text-white hover:bg-blue-300`}
-            onClick={() => handleClick(CanvasMode.None)}
+            onClick={() => handleClick(LayerType.Rectangle)}
           >
             <span className="w-5 text-xs">{canvasMode === CanvasMode.None && "✔"}</span>
             <BiPointer className="mr-2 h-4 w-4" />
@@ -57,7 +52,7 @@ export default function SelectionButton({
 
           <button
             className={`${canvasMode === CanvasMode.Dragging ? "bg-blue-500" : ""} flex w-full items-center rounded-md p-1 text-white hover:bg-blue-300`}
-            onClick={() => handleClick(CanvasMode.Dragging)}
+            onClick={() => handleClick(LayerType.Rectangle)}
           >
             <span className="w-5 text-xs">{canvasMode === CanvasMode.Dragging && "✔"}</span>
             <RiHand className="mr-2 h-4 w-4" />

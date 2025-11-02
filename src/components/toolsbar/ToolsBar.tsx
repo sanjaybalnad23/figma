@@ -1,6 +1,7 @@
 "use client";
-import { CanvasMode, type CanvasState } from "~/types";
+import { CanvasMode, LayerType, type CanvasState } from "~/types";
 import SelectionButton from "./SelectionButton";
+import ShapesSelectionButton from "./ShapesSelectionButton";
 
 export default function ToolsBar({
   canvasState,
@@ -20,6 +21,10 @@ export default function ToolsBar({
               canvasMode === CanvasMode.Dragging ? { mode: canvasMode, origin: null } : { mode: canvasMode }
             )
           }
+        />
+        <ShapesSelectionButton isActive={canvasState.mode === CanvasMode.Inserting && [LayerType.Rectangle, LayerType.Ellipse].includes(canvasState.layerType)}
+        canvasState={canvasState}
+        onClick={(layerType)=>setCanvasState({mode:CanvasMode.Inserting, layerType})}
         />
       </div>
     </div>

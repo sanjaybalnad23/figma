@@ -33,13 +33,16 @@ export default function SelectionButton({
     onClick(canvasMode);
     setIsOpen(false);
   };
+  
+
 
   return (
     <div className="relative flex" ref={menuRef}>
       <IconButton isActive={isActive} onClick={() => onClick(CanvasMode.None)}>
-        {canvasMode === CanvasMode.None || (!canvasMode && <BiPointer className="size-5" />)}
+        {canvasMode === CanvasMode.None || !canvasMode && (<BiPointer className="size-5" />)}
         {canvasMode === CanvasMode.Dragging && <RiHand className="size-5" />}
         {canvasMode === CanvasMode.None && <BiPointer className="size-5" />}
+        {canvasMode === CanvasMode.Inserting && <BiPointer className="size-5" />}
       </IconButton>
       <button onClick={() => setIsOpen(!isOpen)} className="ml-1 rotate-180">
         <GoTriangleUp />

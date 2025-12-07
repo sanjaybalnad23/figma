@@ -1,5 +1,5 @@
 "use client";
-import { useMutation, useStorage } from "@liveblocks/react";
+import { useMutation, useSelf, useStorage } from "@liveblocks/react";
 import React, { useEffect, useState } from "react";
 import { pointerEventToCanvasPoint, rgbToHex } from "~/utils";
 import LayerComponent from "./LayerComponent";
@@ -24,58 +24,52 @@ export default function Canvas() {
   const layerIds = useStorage(root => root.layerIds);
   const [camera, setCamera] = useState<Camera>({ x: 100, y: 100, zoom: 1 });
   const [canvasState, setCanvasState] = useState<CanvasState>({ mode: CanvasMode.None });
+  const pencilDrag = useSelf((me)=>me.presence.pencilDraft)
 
-  const insertLayer = useMutation(
-    (
-      { storage, setMyPresence },
-      layerType: LayerType.Ellipse | LayerType.Rectangle | LayerType.Text,
-      position: Point
-    ) => {
-      const liveLayers = storage.get("layers");
-      if (liveLayers.size >= MAX_LAYERS) {
-        return;
-      }
+  const insertLayer = useMutation(({ storage, setMyPresence }, layerType: LayerType, position: Point) => {
+    const liveLayers = storage.get("layers");
+    if (liveLayers.size >= MAX_LAYERS) {
+      return;
+    }
 
-      const liveLayerIds = storage.get("layerIds");
-      const layerId = nanoid();
-      let layer: LiveObject<Layer> | null = null;
+    const liveLayerIds = storage.get("layerIds");
+    const layerId = nanoid();
+    let layer: LiveObject<Layer> | null = null;
 
-      if (layerType === LayerType.Rectangle) {
-        layer = new LiveObject<RectangleLayer>({
-          type: LayerType.Rectangle,
-          x: position.x,
-          y: position.y,
-          height: 100,
-          width: 100,
-          fill: { r: 217, g: 217, b: 217 },
-          stroke: { r: 217, g: 217, b: 217 },
-          opacity: 100,
-          cornerRadius: 0,
-        });
-      }
+    if (layerType === LayerType.Rectangle) {
+      layer = new LiveObject<RectangleLayer>({
+        type: LayerType.Rectangle,
+        x: position.x,
+        y: position.y,
+        height: 100,
+        width: 100,
+        fill: { r: 217, g: 217, b: 217 },
+        stroke: { r: 217, g: 217, b: 217 },
+        opacity: 100,
+        cornerRadius: 0,
+      });
+    }
 
-      if (layerType === LayerType.Ellipse) {
-        layer = new LiveObject<EllipseLayer>({
-          type: LayerType.Ellipse,
-          x: position.x,
-          y: position.y,
-          height: 100,
-          width: 100,
-          fill: { r: 217, g: 217, b: 217 },
-          stroke: { r: 217, g: 217, b: 217 },
-          opacity: 100,
-        });
-      }
+    if (layerType === LayerType.Ellipse) {
+      layer = new LiveObject<EllipseLayer>({
+        type: LayerType.Ellipse,
+        x: position.x,
+        y: position.y,
+        height: 100,
+        width: 100,
+        fill: { r: 217, g: 217, b: 217 },
+        stroke: { r: 217, g: 217, b: 217 },
+        opacity: 100,
+      });
+    }
 
-      if (layer) {
-        liveLayerIds.push(layerId);
-        liveLayers.set(layerId, layer);
-        console.log("Layer added to storage");
-        setMyPresence({ selection: [layerId] }, { addToHistory: true });
-      }
-    },
-    []
-  );
+    if (layer) {
+      liveLayerIds.push(layerId);
+      liveLayers.set(layerId, layer);
+      console.log("Layer added to storage");
+      setMyPresence({ selection: [layerId] }, { addToHistory: true });
+    }
+  }, []);
 
   useEffect(() => {
     setTimeout(() => {
@@ -87,9 +81,47 @@ export default function Canvas() {
 
   const handlePointerUp = (e: React.PointerEvent) => {
     const point = pointerEventToCanvasPoint(e, camera);
-    console.log("HHHHHH");
-    insertLayer(LayerType.Ellipse, point);
+    if (canvasState.mode === CanvasMode.None) {
+      setCanvasState({ mode: CanvasMode.None });
+    } else if (canvasState.mode === CanvasMode.Inserting) {
+      insertLayer(canvasState.layerType, point);
+    }
+    else if(canvasState.mode === CanvasMode.Dragging){
+      setCanvasState({mode:CanvasMode.Dragging, origin:null})
+    }
   };
+
+  const handleWheel = (e:React.WheelEvent)=>{
+    setCamera((camera)=>({
+      x:camera.x - e.deltaX,
+      y:camera.y - e.deltaY,
+      zoom:camera.zoom
+    }))
+  }
+
+  // TODO
+  const handlePointerDown = (e: React.PointerEvent) => {
+    const point = pointerEventToCanvasPoint(e, camera);
+    if (canvasState.mode === CanvasMode.Dragging) {
+      setCanvasState({ mode: CanvasMode.Dragging, origin:point });
+    }
+  };
+
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (canvasState.mode === CanvasMode.Dragging && canvasState.origin !== null) {
+      const deltaX = e.movementX;
+      const deltaY = e.movementY;
+
+      setCamera(()=>({
+        x:camera.x + deltaX,
+        y:camera.y + deltaY,
+        zoom:camera.zoom
+      }))
+    }
+  };
+
+
 
   return (
     <div className=" flex h-screen w-full">
@@ -98,8 +130,17 @@ export default function Canvas() {
           className="h-full w-full touch-none"
           style={{ backgroundColor: roomColor ? rgbToHex(roomColor) : "royalblue" }}
         >
-          <svg onPointerUp={handlePointerUp} className="h-full w-full">
-            <g>
+          <svg
+           onWheel={handleWheel} 
+           onPointerUp={handlePointerUp}
+           onPointerDown={handlePointerDown}
+           onPointerMove={handlePointerMove}
+            className="h-full w-full">
+            <g
+              style={{
+                transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.zoom})`,
+              }}
+            >
               {layerIds?.map(layerId => (
                 <LayerComponent key={layerId} layerId={layerId} />
               ))}
@@ -107,7 +148,18 @@ export default function Canvas() {
           </svg>
         </div>
       </main>
-      <ToolsBar canvasState={canvasState} setCanvasState={setCanvasState} />
+      <ToolsBar
+        canvasState={canvasState}
+        setCanvasState={setCanvasState}
+        zoomIn={function () {
+          setCamera(camera => ({ ...camera, zoom: camera.zoom + 0.1 }));
+        }}
+        canZoomIn={camera.zoom < 2}
+        zoomOut={function () {
+          setCamera(camera => ({ ...camera, zoom: camera.zoom - 0.1 }));
+        }}
+        canZoomOut={camera.zoom > 0.5}
+      />
     </div>
   );
 }

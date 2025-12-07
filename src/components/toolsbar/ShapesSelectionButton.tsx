@@ -4,6 +4,7 @@ import { GoTriangleUp } from "react-icons/go";
 import  { RiHand } from "react-icons/ri";
 import { LayerType,  CanvasMode, type CanvasState } from "~/types";
 import IconButton from "./IconButton";
+import { IoEllipseOutline, IoSquareOutline } from "react-icons/io5";
 
 export default function ShapesSelectionButton({
   isActive,
@@ -35,28 +36,37 @@ export default function ShapesSelectionButton({
   return (
     <div className="relative flex" ref={menuRef}>
       <IconButton isActive={isActive} onClick={() => onClick(LayerType.Rectangle)}>
+        {canvasState.mode !== CanvasMode.Inserting && <IoSquareOutline className="size-5"/>}
+
+        {canvasState.mode === CanvasMode.Inserting &&  canvasState.layerType === LayerType.Rectangle&&( <IoSquareOutline className="size-5"/>)}
+
+        {canvasState.mode === CanvasMode.Inserting && canvasState.layerType=== LayerType.Ellipse &&( <IoEllipseOutline className="size-5"/>)}
       </IconButton>
+
       <button onClick={() => setIsOpen(!isOpen)} className="ml-1 rotate-180">
         <GoTriangleUp />
       </button>
+
       {isOpen && (
         <div className="absolute -top-20 mt-1 min-w-[150px] bg-[#1e1e1e] p-2 shadow-lg">
+          {/* Rectangle */}
           <button
-            className={`${canvasMode === CanvasMode.None ? "bg-blue-500" : ""} flex w-full items-center rounded-md p-1 text-white hover:bg-blue-300`}
+            className={`${canvasState.mode === CanvasMode.Inserting && canvasState.layerType === LayerType.Rectangle? "bg-blue-500" : ""} flex w-full items-center rounded-md p-1 text-white hover:bg-blue-300`}
             onClick={() => handleClick(LayerType.Rectangle)}
           >
-            <span className="w-5 text-xs">{canvasMode === CanvasMode.None && "✔"}</span>
-            <BiPointer className="mr-2 h-4 w-4" />
-            <span className="text-xs">Move</span>
+            <span className="w-5 text-xs">{canvasState.mode === CanvasMode.Inserting && canvasState.layerType === LayerType.Rectangle && "✔"}</span>
+            <IoSquareOutline className="mr-2 h-4 w-4" />
+            <span className="text-xs">Rectangle</span>
           </button>
 
+          {/* Ellipse */}
           <button
-            className={`${canvasMode === CanvasMode.Dragging ? "bg-blue-500" : ""} flex w-full items-center rounded-md p-1 text-white hover:bg-blue-300`}
-            onClick={() => handleClick(LayerType.Rectangle)}
+            className={`${canvasState.mode === CanvasMode.Inserting && canvasState.layerType === LayerType.Ellipse ? "bg-blue-500" : ""} flex w-full items-center rounded-md p-1 text-white hover:bg-blue-300`}
+            onClick={() => handleClick(LayerType.Ellipse)}
           >
-            <span className="w-5 text-xs">{canvasMode === CanvasMode.Dragging && "✔"}</span>
-            <RiHand className="mr-2 h-4 w-4" />
-            <span className="text-xs">Hand tool</span>
+            <span className="w-5 text-xs">{canvasState.mode === CanvasMode.Inserting && canvasState.layerType === LayerType.Ellipse&& "✔"}</span>
+            <IoEllipseOutline className="mr-2 h-4 w-4" />
+            <span className="text-xs">Ellipse</span>
           </button>
         </div>
       )}

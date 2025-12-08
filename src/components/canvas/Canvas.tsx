@@ -1,7 +1,7 @@
 "use client";
 import { useMutation, useSelf, useStorage } from "@liveblocks/react";
 import React, { useEffect, useState } from "react";
-import { pointerEventToCanvasPoint, rgbToHex } from "~/utils";
+import { penPointsToPathLayer, pointerEventToCanvasPoint, rgbToHex } from "~/utils";
 import LayerComponent from "./LayerComponent";
 import { nanoid } from "nanoid";
 import { LiveObject } from "@liveblocks/client";
@@ -16,6 +16,7 @@ import {
   type RectangleLayer,
 } from "~/types";
 import ToolsBar from "../toolsbar/ToolsBar";
+import Path from "./Path";
 
 const MAX_LAYERS = 100;
 
@@ -24,7 +25,8 @@ export default function Canvas() {
   const layerIds = useStorage(root => root.layerIds);
   const [camera, setCamera] = useState<Camera>({ x: 100, y: 100, zoom: 1 });
   const [canvasState, setCanvasState] = useState<CanvasState>({ mode: CanvasMode.None });
-  const pencilDrag = useSelf((me)=>me.presence.pencilDraft)
+  const pencilDraft = useSelf((me)=>me.presence.pencilDraft)
+
 
   const insertLayer = useMutation(({ storage, setMyPresence }, layerType: LayerType, position: Point) => {
     const liveLayers = storage.get("layers");
@@ -71,6 +73,46 @@ export default function Canvas() {
     }
   }, []);
 
+  const startDrawing = useMutation(({setMyPresence}, point:Point, pressure:number)=>{
+    setMyPresence({
+      pencilDraft:[[point.x, point.y, pressure]],
+      penColor:{r:34, g:32, b:46}
+    })
+  },[])
+
+  const continueDrawing = useMutation(({setMyPresence, self}, point:Point, e:React.PointerEvent)=>{
+    const {pencilDraft} = self.presence
+    if(canvasState.mode !== CanvasMode.Pencil || pencilDraft === null || e.buttons !== 1){
+      return
+    }
+    setMyPresence({
+      pencilDraft:[...pencilDraft,[point.x, point.y, e.pressure]],
+      // penColor:{r:34, g:32, b:46}
+    })
+  },[])
+
+  const insertPath = useMutation(({storage, self, setMyPresence})=>{
+    const liveLayers = storage.get("layers")
+    const {pencilDraft} = self.presence
+
+    if(pencilDraft === null || pencilDraft.length < 2 || liveLayers.size >= MAX_LAYERS){
+      setMyPresence({pencilDraft:null})
+      return;
+    }
+
+    const id = nanoid()
+    liveLayers.set(
+      id,
+      new LiveObject(
+        penPointsToPathLayer(pencilDraft, {r:217, g:217, b:217})
+      )
+    )
+    const liveLayerIds = storage.get("layerIds")
+    liveLayerIds.push(id)
+    setMyPresence({pencilDraft:null})
+    setCanvasState({mode:CanvasMode.Pencil})
+  },[])
+
   useEffect(() => {
     setTimeout(() => {
       // waiting to load storage
@@ -89,6 +131,9 @@ export default function Canvas() {
     else if(canvasState.mode === CanvasMode.Dragging){
       setCanvasState({mode:CanvasMode.Dragging, origin:null})
     }
+    else if(canvasState.mode === CanvasMode.Pencil){
+      insertPath();
+    }
   };
 
   const handleWheel = (e:React.WheelEvent)=>{
@@ -104,11 +149,17 @@ export default function Canvas() {
     const point = pointerEventToCanvasPoint(e, camera);
     if (canvasState.mode === CanvasMode.Dragging) {
       setCanvasState({ mode: CanvasMode.Dragging, origin:point });
+      return
+    }
+
+    if(canvasState.mode === CanvasMode.Pencil){
+      startDrawing(point, e.pressure)
     }
   };
 
 
   const handlePointerMove = (e: React.PointerEvent) => {
+    const point = pointerEventToCanvasPoint(e, camera);
     if (canvasState.mode === CanvasMode.Dragging && canvasState.origin !== null) {
       const deltaX = e.movementX;
       const deltaY = e.movementY;
@@ -118,6 +169,9 @@ export default function Canvas() {
         y:camera.y + deltaY,
         zoom:camera.zoom
       }))
+    }
+    else if(canvasState.mode === CanvasMode.Pencil){
+        continueDrawing(point,e)
     }
   };
 
@@ -144,6 +198,8 @@ export default function Canvas() {
               {layerIds?.map(layerId => (
                 <LayerComponent key={layerId} layerId={layerId} />
               ))}
+
+              {pencilDraft !== null && pencilDraft.length > 0 && <Path x={0} y={0} stroke={{r:217, g:217, b:217}} fill={{r:217, g:217, b:217}} opacity={1} points={pencilDraft} />}
             </g>
           </svg>
         </div>

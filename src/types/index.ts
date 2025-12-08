@@ -44,6 +44,8 @@ export type PathLayer = {
   type: LayerType.Path;
   x: number;
   y: number;
+  height:number,
+  width:number,
   fill: Color;
   stroke: Color;
   opacity: number;

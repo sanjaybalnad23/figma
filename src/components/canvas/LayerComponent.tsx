@@ -4,12 +4,16 @@ import { useStorage } from "@liveblocks/react";
 import Rectangle from "./Rectangle";
 import { LayerType } from "~/types";
 import Ellipse from "./Ellipse";
+import Path from "./Path";
 
 export default function LayerComponent({ layerId }: { layerId: string }) {
   const layer = useStorage(root => root.layers.get(layerId));
   if (!layer) return null;
 
   switch (layer.type) {
+    case LayerType.Path:
+      return <Path opacity={layer.opacity} points={layer.points} x={layer.x} y={layer.y} fill={layer.fill} stroke={layer.stroke} />
+
     case LayerType.Rectangle:
       return <Rectangle id={layerId} layer={layer} />;
 

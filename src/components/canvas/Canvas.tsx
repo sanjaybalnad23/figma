@@ -1,5 +1,5 @@
 "use client";
-import { useMutation, useSelf, useStorage } from "@liveblocks/react";
+import { useMutation, useMyPresence, useSelf, useStorage } from "@liveblocks/react";
 import React, { useEffect, useState } from "react";
 import { penPointsToPathLayer, pointerEventToCanvasPoint, rgbToHex } from "~/utils";
 import LayerComponent from "./LayerComponent";
@@ -28,6 +28,7 @@ export default function Canvas() {
   const [camera, setCamera] = useState<Camera>({ x: 100, y: 100, zoom: 1 });
   const [canvasState, setCanvasState] = useState<CanvasState>({ mode: CanvasMode.None });
   const pencilDraft = useSelf(me => me.presence.pencilDraft);
+  const presence = useMyPresence();
 
   const insertLayer = useMutation(({ storage, setMyPresence }, layerType: LayerType, position: Point) => {
     const liveLayers = storage.get("layers");

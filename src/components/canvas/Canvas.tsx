@@ -18,6 +18,7 @@ import {
 } from "~/types";
 import ToolsBar from "../toolsbar/ToolsBar";
 import Path from "./Path";
+import SelectionBox from "./SelectionBox";
 
 const MAX_LAYERS = 100;
 
@@ -215,6 +216,8 @@ export default function Canvas() {
               {layerIds?.map(layerId => (
                 <LayerComponent onLayerPointerDown={handleLayerPointerDown} key={layerId} layerId={layerId} />
               ))}
+
+              <SelectionBox />
 
               {pencilDraft !== null && pencilDraft.length > 0 && (
                 <Path

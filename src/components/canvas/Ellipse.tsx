@@ -1,11 +1,20 @@
 import type { EllipseLayer } from "~/types";
 import { rgbToHex } from "~/utils";
 
-export default function Ellipse({ id, layer }: { id: string; layer: EllipseLayer }) {
+export default function Ellipse({
+  id,
+  layer,
+  onPointerDown,
+}: {
+  id: string;
+  layer: EllipseLayer;
+  onPointerDown: (e: React.PointerEvent, layerId: string) => void;
+}) {
   const { fill, height, opacity, stroke, width, x, y } = layer;
   return (
     <g>
       <ellipse
+        onPointerDown={e => onPointerDown(e, id)}
         style={{ transform: `translate(${x}px, ${y}px)` }}
         width={width}
         height={height}

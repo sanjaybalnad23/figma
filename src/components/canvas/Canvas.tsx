@@ -8,6 +8,7 @@ import { LiveObject } from "@liveblocks/client";
 import {
   CanvasMode,
   LayerType,
+  type TextLayer,
   type Camera,
   type CanvasState,
   type EllipseLayer,
@@ -25,8 +26,7 @@ export default function Canvas() {
   const layerIds = useStorage(root => root.layerIds);
   const [camera, setCamera] = useState<Camera>({ x: 100, y: 100, zoom: 1 });
   const [canvasState, setCanvasState] = useState<CanvasState>({ mode: CanvasMode.None });
-  const pencilDraft = useSelf((me)=>me.presence.pencilDraft)
-
+  const pencilDraft = useSelf(me => me.presence.pencilDraft);
 
   const insertLayer = useMutation(({ storage, setMyPresence }, layerType: LayerType, position: Point) => {
     const liveLayers = storage.get("layers");
@@ -65,6 +65,23 @@ export default function Canvas() {
       });
     }
 
+    if (layerType === LayerType.Text) {
+      layer = new LiveObject<TextLayer>({
+        type: LayerType.Text,
+        x: position.x,
+        y: position.y,
+        height: 100,
+        width: 100,
+        text: "dummy text",
+        fontSize: 16,
+        fill: { r: 217, g: 217, b: 217 },
+        stroke: { r: 217, g: 217, b: 217 },
+        opacity: 100,
+        fontWeight: 400,
+        fontFamily: "monospace",
+      });
+    }
+
     if (layer) {
       liveLayerIds.push(layerId);
       liveLayers.set(layerId, layer);
@@ -73,45 +90,40 @@ export default function Canvas() {
     }
   }, []);
 
-  const startDrawing = useMutation(({setMyPresence}, point:Point, pressure:number)=>{
+  const startDrawing = useMutation(({ setMyPresence }, point: Point, pressure: number) => {
     setMyPresence({
-      pencilDraft:[[point.x, point.y, pressure]],
-      penColor:{r:34, g:32, b:46}
-    })
-  },[])
+      pencilDraft: [[point.x, point.y, pressure]],
+      penColor: { r: 34, g: 32, b: 46 },
+    });
+  }, []);
 
-  const continueDrawing = useMutation(({setMyPresence, self}, point:Point, e:React.PointerEvent)=>{
-    const {pencilDraft} = self.presence
-    if(canvasState.mode !== CanvasMode.Pencil || pencilDraft === null || e.buttons !== 1){
-      return
+  const continueDrawing = useMutation(({ setMyPresence, self }, point: Point, e: React.PointerEvent) => {
+    const { pencilDraft } = self.presence;
+    if (canvasState.mode !== CanvasMode.Pencil || pencilDraft === null || e.buttons !== 1) {
+      return;
     }
     setMyPresence({
-      pencilDraft:[...pencilDraft,[point.x, point.y, e.pressure]],
+      pencilDraft: [...pencilDraft, [point.x, point.y, e.pressure]],
       // penColor:{r:34, g:32, b:46}
-    })
-  },[])
+    });
+  }, []);
 
-  const insertPath = useMutation(({storage, self, setMyPresence})=>{
-    const liveLayers = storage.get("layers")
-    const {pencilDraft} = self.presence
+  const insertPath = useMutation(({ storage, self, setMyPresence }) => {
+    const liveLayers = storage.get("layers");
+    const { pencilDraft } = self.presence;
 
-    if(pencilDraft === null || pencilDraft.length < 2 || liveLayers.size >= MAX_LAYERS){
-      setMyPresence({pencilDraft:null})
+    if (pencilDraft === null || pencilDraft.length < 2 || liveLayers.size >= MAX_LAYERS) {
+      setMyPresence({ pencilDraft: null });
       return;
     }
 
-    const id = nanoid()
-    liveLayers.set(
-      id,
-      new LiveObject(
-        penPointsToPathLayer(pencilDraft, {r:217, g:217, b:217})
-      )
-    )
-    const liveLayerIds = storage.get("layerIds")
-    liveLayerIds.push(id)
-    setMyPresence({pencilDraft:null})
-    setCanvasState({mode:CanvasMode.Pencil})
-  },[])
+    const id = nanoid();
+    liveLayers.set(id, new LiveObject(penPointsToPathLayer(pencilDraft, { r: 217, g: 217, b: 217 })));
+    const liveLayerIds = storage.get("layerIds");
+    liveLayerIds.push(id);
+    setMyPresence({ pencilDraft: null });
+    setCanvasState({ mode: CanvasMode.Pencil });
+  }, []);
 
   useEffect(() => {
     setTimeout(() => {
@@ -127,36 +139,32 @@ export default function Canvas() {
       setCanvasState({ mode: CanvasMode.None });
     } else if (canvasState.mode === CanvasMode.Inserting) {
       insertLayer(canvasState.layerType, point);
-    }
-    else if(canvasState.mode === CanvasMode.Dragging){
-      setCanvasState({mode:CanvasMode.Dragging, origin:null})
-    }
-    else if(canvasState.mode === CanvasMode.Pencil){
+    } else if (canvasState.mode === CanvasMode.Dragging) {
+      setCanvasState({ mode: CanvasMode.Dragging, origin: null });
+    } else if (canvasState.mode === CanvasMode.Pencil) {
       insertPath();
     }
   };
 
-  const handleWheel = (e:React.WheelEvent)=>{
-    setCamera((camera)=>({
-      x:camera.x - e.deltaX,
-      y:camera.y - e.deltaY,
-      zoom:camera.zoom
-    }))
-  }
+  const handleWheel = (e: React.WheelEvent) => {
+    setCamera(camera => ({
+      x: camera.x - e.deltaX,
+      y: camera.y - e.deltaY,
+      zoom: camera.zoom,
+    }));
+  };
 
-  // TODO
   const handlePointerDown = (e: React.PointerEvent) => {
     const point = pointerEventToCanvasPoint(e, camera);
     if (canvasState.mode === CanvasMode.Dragging) {
-      setCanvasState({ mode: CanvasMode.Dragging, origin:point });
-      return
+      setCanvasState({ mode: CanvasMode.Dragging, origin: point });
+      return;
     }
 
-    if(canvasState.mode === CanvasMode.Pencil){
-      startDrawing(point, e.pressure)
+    if (canvasState.mode === CanvasMode.Pencil) {
+      startDrawing(point, e.pressure);
     }
   };
-
 
   const handlePointerMove = (e: React.PointerEvent) => {
     const point = pointerEventToCanvasPoint(e, camera);
@@ -164,18 +172,26 @@ export default function Canvas() {
       const deltaX = e.movementX;
       const deltaY = e.movementY;
 
-      setCamera(()=>({
-        x:camera.x + deltaX,
-        y:camera.y + deltaY,
-        zoom:camera.zoom
-      }))
-    }
-    else if(canvasState.mode === CanvasMode.Pencil){
-        continueDrawing(point,e)
+      setCamera(() => ({
+        x: camera.x + deltaX,
+        y: camera.y + deltaY,
+        zoom: camera.zoom,
+      }));
+    } else if (canvasState.mode === CanvasMode.Pencil) {
+      continueDrawing(point, e);
     }
   };
 
+  const handleLayerPointerDown = useMutation(({ self, setMyPresence }, e: React.PointerEvent, layerId: string) => {
+    if (canvasState.mode === CanvasMode.Pencil || canvasState.mode === CanvasMode.Inserting) return;
 
+    e.stopPropagation()
+    if(!self.presence.selection.includes(layerId)){
+      setMyPresence({
+        selection:[layerId]
+      })
+    }
+  }, []);
 
   return (
     <div className=" flex h-screen w-full">
@@ -185,21 +201,31 @@ export default function Canvas() {
           style={{ backgroundColor: roomColor ? rgbToHex(roomColor) : "royalblue" }}
         >
           <svg
-           onWheel={handleWheel} 
-           onPointerUp={handlePointerUp}
-           onPointerDown={handlePointerDown}
-           onPointerMove={handlePointerMove}
-            className="h-full w-full">
+            onWheel={handleWheel}
+            onPointerUp={handlePointerUp}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            className="h-full w-full"
+          >
             <g
               style={{
                 transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.zoom})`,
               }}
             >
               {layerIds?.map(layerId => (
-                <LayerComponent key={layerId} layerId={layerId} />
+                <LayerComponent onLayerPointerDown={handleLayerPointerDown} key={layerId} layerId={layerId} />
               ))}
 
-              {pencilDraft !== null && pencilDraft.length > 0 && <Path x={0} y={0} stroke={{r:217, g:217, b:217}} fill={{r:217, g:217, b:217}} opacity={1} points={pencilDraft} />}
+              {pencilDraft !== null && pencilDraft.length > 0 && (
+                <Path
+                  x={0}
+                  y={0}
+                  stroke={{ r: 217, g: 217, b: 217 }}
+                  fill={{ r: 217, g: 217, b: 217 }}
+                  opacity={1}
+                  points={pencilDraft}
+                />
+              )}
             </g>
           </svg>
         </div>

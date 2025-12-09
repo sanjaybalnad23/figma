@@ -5,6 +5,7 @@ import ShapesSelectionButton from "./ShapesSelectionButton";
 import ZoomInButton from "./ZoomInButton";
 import ZoomOutButton from "./ZoomOutButton";
 import PencilButton from "./PencilButton";
+import TextButton from "./TextButton";
 
 export default function ToolsBar({
   canvasState,
@@ -12,14 +13,14 @@ export default function ToolsBar({
   zoomIn,
   zoomOut,
   canZoomIn,
-  canZoomOut
+  canZoomOut,
 }: {
   canvasState: CanvasState;
   setCanvasState: (newState: CanvasState) => void;
-  zoomIn:()=>void,
-  zoomOut:()=>void,
-  canZoomIn:boolean,
-  canZoomOut:boolean
+  zoomIn: () => void;
+  zoomOut: () => void;
+  canZoomIn: boolean;
+  canZoomOut: boolean;
 }) {
   return (
     <div className="fixed bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center justify-center rounded-lg bg-white p-1 shadow-[0_0_3px_rgba(0,0,0,0.18)]">
@@ -41,11 +42,18 @@ export default function ToolsBar({
           canvasState={canvasState}
           onClick={layerType => setCanvasState({ mode: CanvasMode.Inserting, layerType })}
         />
-        <PencilButton isActive={canvasState.mode === CanvasMode.Pencil} onClick={()=>setCanvasState({mode:CanvasMode.Pencil})} />
-        <div className="w-[1px] self-stretch bg-black/10 "/>
+        <PencilButton
+          isActive={canvasState.mode === CanvasMode.Pencil}
+          onClick={() => setCanvasState({ mode: CanvasMode.Pencil })}
+        />
+        <TextButton
+          isActive={canvasState.mode === CanvasMode.Inserting && canvasState.layerType === LayerType.Text}
+          onClick={() => setCanvasState({ mode: CanvasMode.Inserting, layerType: LayerType.Text })}
+        />
+        <div className="w-[1px] self-stretch bg-black/10 " />
         <div className="flex items-center justify-center">
-          <ZoomInButton onClick={zoomIn} disabled={!canZoomIn}/>
-          <ZoomOutButton onClick={zoomOut} disabled={!canZoomOut}/>
+          <ZoomInButton onClick={zoomIn} disabled={!canZoomIn} />
+          <ZoomOutButton onClick={zoomOut} disabled={!canZoomOut} />
         </div>
       </div>
     </div>

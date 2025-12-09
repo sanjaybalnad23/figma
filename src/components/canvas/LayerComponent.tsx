@@ -5,8 +5,9 @@ import Rectangle from "./Rectangle";
 import { LayerType } from "~/types";
 import Ellipse from "./Ellipse";
 import Path from "./Path";
+import Text from "./Text";
 
-export default function LayerComponent({ layerId }: { layerId: string }) {
+export default function LayerComponent({ layerId }: { layerId: string, onLayerPointerDown:(e: React.PointerEvent, layerId: string)=>void }) {
   const layer = useStorage(root => root.layers.get(layerId));
   if (!layer) return null;
 
@@ -19,6 +20,9 @@ export default function LayerComponent({ layerId }: { layerId: string }) {
 
     case LayerType.Ellipse:
       return <Ellipse id={layerId} layer={layer} />;
+
+    case LayerType.Text:
+      return <Text id={layerId} layer={layer}/>
 
     default:
       return null;

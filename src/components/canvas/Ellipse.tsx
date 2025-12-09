@@ -2,7 +2,7 @@ import type { EllipseLayer } from "~/types";
 import { rgbToHex } from "~/utils";
 
 export default function Ellipse({ id, layer }: { id: string; layer: EllipseLayer }) {
-  const { fill, height, opacity, stroke, type, width, x, y } = layer;
+  const { fill, height, opacity, stroke, width, x, y } = layer;
   return (
     <g>
       <ellipse

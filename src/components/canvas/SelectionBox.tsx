@@ -1,11 +1,11 @@
 import { useSelf, useStorage } from "@liveblocks/react";
 import { useEffect, useRef, useState } from "react";
-import { LayerType } from "~/types";
+import { LayerType, Side, type XYWH } from "~/types";
 
 const PADDING = 16;
 const HANDLE_WIDTH = 10;
 
-export default function SelectionBox() {
+export default function SelectionBox({onResizeHandlePointerDown}:{onResizeHandlePointerDown:(corner:Side, initialBuild:XYWH)=>void}) {
   const soleLayerId = useSelf(me => (me.presence.selection.length === 1 ? me.presence.selection[0] : null));
   const isShowingHandles = useStorage(root => soleLayerId && root.layers.get(soleLayerId)?.type !== LayerType.Path);
   const textRef = useRef<SVGTextElement>(null);
@@ -54,49 +54,73 @@ export default function SelectionBox() {
             width={HANDLE_WIDTH}
             height={HANDLE_WIDTH}
             style={{ transform: `translate(${layer.x - HANDLE_WIDTH / 2}px, ${layer.y - HANDLE_WIDTH / 2}px)` }}
+            onPointerDown={(e)=>{
+              e.stopPropagation()
+              onResizeHandlePointerDown(Side.Top + Side.Left, layer)
+            }}
           />
           <rect
-            cursor={"nwse-resize"}
+            cursor={"ns-resize"}
             className="fill-white stroke-[royalblue] stroke-[1px]"
             width={HANDLE_WIDTH}
             height={HANDLE_WIDTH}
             style={{
               transform: `translate(${layer.x + layer.width / 2 - HANDLE_WIDTH / 2}px, ${layer.y - HANDLE_WIDTH / 2}px)`,
             }}
+            onPointerDown={(e)=>{
+              e.stopPropagation()
+              onResizeHandlePointerDown(Side.Top, layer)
+            }}
           />
           <rect
-            cursor={"nwse-resize"}
+            cursor={"nesw-resize"}
             className="fill-white stroke-[royalblue] stroke-[1px]"
             width={HANDLE_WIDTH}
             height={HANDLE_WIDTH}
             style={{
               transform: `translate(${layer.x + layer.width - HANDLE_WIDTH / 2}px, ${layer.y - HANDLE_WIDTH / 2}px)`,
             }}
+            onPointerDown={(e)=>{
+              e.stopPropagation()
+              onResizeHandlePointerDown(Side.Top + Side.Right, layer)
+            }}
           />
 
           <rect
-            cursor={"nwse-resize"}
+            cursor={"ew-resize"}
             className="fill-white stroke-[royalblue] stroke-[1px]"
             width={HANDLE_WIDTH}
             height={HANDLE_WIDTH}
             style={{ transform: `translate(${layer.x - HANDLE_WIDTH / 2}px, ${layer.y +layer.height / 2 - HANDLE_WIDTH / 2}px)` }}
+            onPointerDown={(e)=>{
+              e.stopPropagation()
+              onResizeHandlePointerDown(Side.Left, layer)
+            }}
           />
 
           <rect
-            cursor={"nwse-resize"}
+            cursor={"nesw-resize"}
             className="fill-white stroke-[royalblue] stroke-[1px]"
             width={HANDLE_WIDTH}
             height={HANDLE_WIDTH}
             style={{ transform: `translate(${layer.x - HANDLE_WIDTH / 2}px, ${layer.y +layer.height - HANDLE_WIDTH / 2}px)` }}
+            onPointerDown={(e)=>{
+              e.stopPropagation()
+              onResizeHandlePointerDown(Side.Bottom + Side.Left, layer)
+            }}
           />
 
 
           <rect
-            cursor={"nwse-resize"}
+            cursor={"ew-resize"}
             className="fill-white stroke-[royalblue] stroke-[1px]"
             width={HANDLE_WIDTH}
             height={HANDLE_WIDTH}
             style={{ transform: `translate(${layer.x +layer.width- HANDLE_WIDTH / 2}px, ${layer.y +layer.height / 2 - HANDLE_WIDTH / 2}px)` }}
+            onPointerDown={(e)=>{
+              e.stopPropagation()
+              onResizeHandlePointerDown(Side.Right, layer)
+            }}
           />
 
           <rect
@@ -105,14 +129,22 @@ export default function SelectionBox() {
             width={HANDLE_WIDTH}
             height={HANDLE_WIDTH}
             style={{ transform: `translate(${layer.x +layer.width- HANDLE_WIDTH / 2}px, ${layer.y +layer.height - HANDLE_WIDTH / 2}px)` }}
+            onPointerDown={(e)=>{
+              e.stopPropagation()
+              onResizeHandlePointerDown(Side.Bottom + Side.Right, layer)
+            }}
           />
 
           <rect
-            cursor={"nwse-resize"}
+            cursor={"ns-resize"}
             className="fill-white stroke-[royalblue] stroke-[1px]"
             width={HANDLE_WIDTH}
             height={HANDLE_WIDTH}
             style={{ transform: `translate(${layer.x +layer.width / 2- HANDLE_WIDTH / 2}px, ${layer.y +layer.height - HANDLE_WIDTH / 2}px)` }}
+            onPointerDown={(e)=>{
+              e.stopPropagation()
+              onResizeHandlePointerDown(Side.Bottom, layer)
+            }}
           />
         </>
       )}

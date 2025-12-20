@@ -1,7 +1,7 @@
 "use client";
 import { useMutation, useMyPresence, useSelf, useStorage } from "@liveblocks/react";
 import React, { useEffect, useState } from "react";
-import { penPointsToPathLayer, pointerEventToCanvasPoint, rgbToHex } from "~/utils";
+import { penPointsToPathLayer, pointerEventToCanvasPoint, resizeBounds, rgbToHex } from "~/utils";
 import LayerComponent from "./LayerComponent";
 import { nanoid } from "nanoid";
 import { LiveObject } from "@liveblocks/client";
@@ -15,6 +15,8 @@ import {
   type Layer,
   type Point,
   type RectangleLayer,
+  type XYWH,
+  Side,
 } from "~/types";
 import ToolsBar from "../toolsbar/ToolsBar";
 import Path from "./Path";
@@ -29,6 +31,15 @@ export default function Canvas() {
   const [canvasState, setCanvasState] = useState<CanvasState>({ mode: CanvasMode.None });
   const pencilDraft = useSelf(me => me.presence.pencilDraft);
   const presence = useMyPresence();
+
+
+  const onResizeHandlePointerDown = (corner:Side, initialBounds:XYWH)=>{
+    setCanvasState({
+      mode:CanvasMode.Resizing,
+      initialBounds,
+      corner
+    })
+  }
 
   const insertLayer = useMutation(({ storage, setMyPresence }, layerType: LayerType, position: Point) => {
     const liveLayers = storage.get("layers");
@@ -92,6 +103,30 @@ export default function Canvas() {
     }
   }, []);
 
+  const resizeSelectedLayer = useMutation(({storage, self},point:Point)=>{
+      if(canvasState.mode !== CanvasMode.Resizing) return;
+
+      const bounds = resizeBounds(canvasState.initialBounds, canvasState.corner, point)
+
+      // Update layers to set new width and height of the layer
+
+      const liveLayers = storage.get("layers")
+
+      if(self.presence.selection.length > 0){
+        const layer = liveLayers.get(self.presence.selection[0]!);
+        if(layer){
+          layer.update(bounds)
+        }
+      }
+  },[canvasState])
+
+
+  const unselectLayers = useMutation(({self, setMyPresence})=>{
+    if(self.presence.selection.length > 0){
+      setMyPresence({selection:[]})
+    }
+  },[canvasState])
+
   const startDrawing = useMutation(({ setMyPresence }, point: Point, pressure: number) => {
     setMyPresence({
       pencilDraft: [[point.x, point.y, pressure]],
@@ -135,9 +170,10 @@ export default function Canvas() {
     }, 3000);
   }, []);
 
-  const handlePointerUp = (e: React.PointerEvent) => {
+  const handlePointerUp = useMutation(({},e: React.PointerEvent) => {
     const point = pointerEventToCanvasPoint(e, camera);
     if (canvasState.mode === CanvasMode.None) {
+      unselectLayers()
       setCanvasState({ mode: CanvasMode.None });
     } else if (canvasState.mode === CanvasMode.Inserting) {
       insertLayer(canvasState.layerType, point);
@@ -145,8 +181,10 @@ export default function Canvas() {
       setCanvasState({ mode: CanvasMode.Dragging, origin: null });
     } else if (canvasState.mode === CanvasMode.Pencil) {
       insertPath();
+    }else{
+      setCanvasState({mode:CanvasMode.None})
     }
-  };
+  },[unselectLayers, canvasState]);
 
   const handleWheel = (e: React.WheelEvent) => {
     setCamera(camera => ({
@@ -181,6 +219,8 @@ export default function Canvas() {
       }));
     } else if (canvasState.mode === CanvasMode.Pencil) {
       continueDrawing(point, e);
+    } else if (canvasState.mode === CanvasMode.Resizing) {
+      resizeSelectedLayer(point)
     }
   };
 
@@ -193,7 +233,9 @@ export default function Canvas() {
         selection:[layerId]
       })
     }
-  }, []);
+    const point = pointerEventToCanvasPoint(e, camera)
+    setCanvasState({mode:CanvasMode.Translating,current:point})
+  }, [camera, canvasState.mode]);
 
   return (
     <div className=" flex h-screen w-full">
@@ -218,7 +260,7 @@ export default function Canvas() {
                 <LayerComponent onLayerPointerDown={handleLayerPointerDown} key={layerId} layerId={layerId} />
               ))}
 
-              <SelectionBox />
+              <SelectionBox onResizeHandlePointerDown={onResizeHandlePointerDown} />
 
               {pencilDraft !== null && pencilDraft.length > 0 && (
                 <Path

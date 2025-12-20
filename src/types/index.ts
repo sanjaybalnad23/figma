@@ -44,8 +44,8 @@ export type PathLayer = {
   type: LayerType.Path;
   x: number;
   y: number;
-  height:number,
-  width:number,
+  height: number;
+  width: number;
   fill: Color;
   stroke: Color;
   opacity: number;
@@ -74,6 +74,20 @@ export type Point = {
   y: number;
 };
 
+export enum Side {
+  Top = 1, // Binary:0001
+  Bottom = 2, // Binary:0010
+  Left = 4, // Binary:0100
+  Right = 8, // Binary:1000
+}
+
+export type XYWH = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
 export type CanvasState =
   | {
       mode: CanvasMode.None;
@@ -85,14 +99,24 @@ export type CanvasState =
   | {
       mode: CanvasMode.Dragging;
       origin: Point | null;
-    }|
-    {
-      mode:CanvasMode.Pencil
+    }
+  | {
+      mode: CanvasMode.Pencil;
+    }
+  | {
+      mode: CanvasMode.Resizing;
+      initialBounds: XYWH;
+      corner: Side;
+    }|{
+      mode:CanvasMode.Translating,
+      current:Point
     };
 
 export enum CanvasMode {
   None,
   Inserting,
   Dragging,
-  Pencil
+  Resizing,
+  Pencil,
+  Translating // Select layers, move them around
 }

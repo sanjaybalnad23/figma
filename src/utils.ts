@@ -1,4 +1,4 @@
-import { LayerType, type Camera, type Color, type PathLayer, type Point } from "./types";
+import { LayerType, Side, type Camera, type Color, type PathLayer, type Point, type XYWH } from "./types";
 import React from "react";
 
 export function rgbToHex(color: Color) {
@@ -68,4 +68,35 @@ export function getSvgPathFromStroke(stroke:number[][]) {
 
   d.push("Z")
   return d.join(" ")
+}
+
+export function resizeBounds(bounds:XYWH, corner:Side, point:Point):XYWH{
+    const result:XYWH  = {
+      x:bounds.x,
+      y:bounds.y,
+      width:bounds.width,
+      height:bounds.height
+    }
+
+    if(corner === Side.Left || (corner & Side.Left) !== 0){
+      result.x = Math.min(point.x, bounds.x + bounds.width)
+      result.width = Math.abs(bounds.x + bounds.width - point.x)
+    }
+
+    if(corner === Side.Right || (corner & Side.Right) !== 0){
+      result.x = Math.min(point.x, bounds.x )
+      result.width = Math.abs(point.x - bounds.x)
+    }
+
+    if(corner === Side.Top || (corner & Side.Top) !== 0){
+      result.y = Math.min(point.y, bounds.y + bounds.height)
+      result.height = Math.abs(bounds.y+bounds.height - point.y)
+    }
+
+    if(corner === Side.Top || (corner & Side.Bottom) !== 0){
+      result.y = Math.min(point.y, bounds.y )
+      result.height = Math.abs(point.y - bounds.y)
+    }
+
+    return result
 }

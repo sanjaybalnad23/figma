@@ -103,6 +103,27 @@ export default function Canvas() {
     }
   }, []);
 
+  const translateSelectedLayers = useMutation(({storage, self},point:Point)=>{
+    if(canvasState.mode !== CanvasMode.Translating) return;
+
+    const offset = {
+      x:point.x - canvasState.current.x ,
+      y:point.y - canvasState.current.y 
+    }
+
+    const liveLayers = storage.get("layers")
+    for(const id of self.presence.selection){
+      const layer = liveLayers.get(id)
+      if(layer) {
+        layer.update({
+          x:layer.get("x") + offset.x,
+          y:layer.get("y") + offset.y
+        })
+      }
+    }
+    setCanvasState({mode:CanvasMode.Translating, current:point})
+  },[canvasState])
+
   const resizeSelectedLayer = useMutation(({storage, self},point:Point)=>{
       if(canvasState.mode !== CanvasMode.Resizing) return;
 
@@ -143,7 +164,7 @@ export default function Canvas() {
       pencilDraft: [...pencilDraft, [point.x, point.y, e.pressure]],
       // penColor:{r:34, g:32, b:46}
     });
-  }, []);
+  }, [canvasState]);
 
   const insertPath = useMutation(({ storage, self, setMyPresence }) => {
     const liveLayers = storage.get("layers");
@@ -160,7 +181,7 @@ export default function Canvas() {
     liveLayerIds.push(id);
     setMyPresence({ pencilDraft: null });
     setCanvasState({ mode: CanvasMode.Pencil });
-  }, []);
+  }, [canvasState]);
 
   useEffect(() => {
     setTimeout(() => {
@@ -219,6 +240,9 @@ export default function Canvas() {
       }));
     } else if (canvasState.mode === CanvasMode.Pencil) {
       continueDrawing(point, e);
+    }
+    else if(canvasState.mode === CanvasMode.Translating ){
+      translateSelectedLayers(point)
     } else if (canvasState.mode === CanvasMode.Resizing) {
       resizeSelectedLayer(point)
     }
@@ -239,12 +263,15 @@ export default function Canvas() {
 
   return (
     <div className=" flex h-screen w-full">
+      
       <main className="fixed left-0 right-0 h-screen w-full overflow-y-auto">
         <div
           className="h-full w-full touch-none"
           style={{ backgroundColor: roomColor ? rgbToHex(roomColor) : "royalblue" }}
         >
+          <div style={{position:"fixed" , top:0, color:"wheat"}}>Current canvas State:{canvasState.mode}</div>
           <svg
+          style={{userSelect:canvasState.mode === CanvasMode.Pencil?"none":"auto"}}
             onWheel={handleWheel}
             onPointerUp={handlePointerUp}
             onPointerDown={handlePointerDown}
@@ -255,7 +282,7 @@ export default function Canvas() {
               style={{
                 transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.zoom})`,
               }}
-            >
+              >
               {layerIds?.map(layerId => (
                 <LayerComponent onLayerPointerDown={handleLayerPointerDown} key={layerId} layerId={layerId} />
               ))}

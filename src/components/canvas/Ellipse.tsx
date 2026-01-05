@@ -12,7 +12,21 @@ export default function Ellipse({
 }) {
   const { fill, height, opacity, stroke, width, x, y } = layer;
   return (
-    <g>
+    <g className="group">
+      {/* Hover border */}
+      <ellipse
+      style={{ transform: `translate(${x}px, ${y}px)` }}
+      className="pointer-event-none opacity-0 group-hover:opacity-100"
+      width={width}
+      height={height}
+      fill="none"
+      stroke="#0b99ff"
+      strokeWidth={4}
+          cx={width / 2}
+        cy={height / 2}
+        rx={height}
+        ry={width}
+      ></ellipse>
       <ellipse
         onPointerDown={e => onPointerDown(e, id)}
         style={{ transform: `translate(${x}px, ${y}px)` }}

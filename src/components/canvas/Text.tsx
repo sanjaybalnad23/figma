@@ -55,7 +55,18 @@ export default function Text({
     updateText(inputValue);
   };
   return (
-    <g onDoubleClick={handleDoubleClick} onPointerDown={e => onPointerDown(e, id)}>
+    <g className="group" onDoubleClick={handleDoubleClick} onPointerDown={e => onPointerDown(e, id)}>
+        {/* Hover border */}
+      <rect
+      style={{ transform: `translate(${x}px, ${y}px)` }}
+      className="pointer-event-none opacity-0 group-hover:opacity-100"
+      width={width}
+      height={height}
+      fill="none"
+      stroke="#0b99ff"
+      strokeWidth={4}
+      ></rect>
+      {/* Hover border */}
       {isEditing ? (
         <foreignObject x={x} y={y} width={width} height={height}>
           <input

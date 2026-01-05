@@ -113,10 +113,11 @@ export type CanvasState =
     };
 
 export enum CanvasMode {
-  None,
-  Inserting,
-  Dragging,
-  Resizing,
-  Pencil,
-  Translating // Select layers, move them around
+  None = "None",
+  Inserting ="Inserting",
+  Dragging = "Dragging",
+  Resizing = "Resizing",
+  Pencil = "Pencil",
+  Translating = "Translating",
+  // Select layers, move them around
 }

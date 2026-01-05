@@ -12,7 +12,18 @@ export default function Rectangle({
 }) {
   const { cornerRadius, fill, height, opacity, stroke, type, width, x, y } = layer;
   return (
-    <g>
+    <g className="group">
+      {/* Hover border */}
+      <rect
+      style={{ transform: `translate(${x}px, ${y}px)` }}
+      className="pointer-event-none opacity-0 group-hover:opacity-100"
+      width={width}
+      height={height}
+      fill="none"
+      stroke="#0b99ff"
+      strokeWidth={4}
+      ></rect>
+      {/* Hover border */}
       <rect
         onPointerDown={e => onPointerDown(e, id)}
         style={{ transform: `translate(${x}px, ${y}px)` }}

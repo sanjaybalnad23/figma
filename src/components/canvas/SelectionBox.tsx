@@ -1,5 +1,6 @@
 import { useSelf, useStorage } from "@liveblocks/react";
 import { useEffect, useRef, useState } from "react";
+import { useSelectionBounds } from "~/hooks/useSelectionBounds";
 import { LayerType, Side, type XYWH } from "~/types";
 
 const PADDING = 16;
@@ -10,41 +11,41 @@ export default function SelectionBox({onResizeHandlePointerDown}:{onResizeHandle
   const isShowingHandles = useStorage(root => soleLayerId && root.layers.get(soleLayerId)?.type !== LayerType.Path);
   const textRef = useRef<SVGTextElement>(null);
   const [textWidth, setTextWidth] = useState(0);
+  const bounds = useSelectionBounds()
 
-  const layers = useStorage(root => root.layers);
-  const layer = soleLayerId ? layers?.get(soleLayerId) : null;
+  
 
   useEffect(() => {
     if (!textRef.current) return;
 
     const bbox = textRef.current.getBBox();
     setTextWidth(bbox.width);
-  }, [layer]);
+  }, [bounds]);
 
-  if (!layer) return null;
+  if (!bounds) return null;
   return (
     <>
       <rect
         className="pointer-events-none fill-transparent stroke-[royalblue] stroke-[1px]"
-        style={{ transform: `translate(${layer.x}px, ${layer.y}px)` }}
-        width={layer?.width}
-        height={layer?.height}
+        style={{ transform: `translate(${bounds.x}px, ${bounds.y}px)` }}
+        width={bounds.width}
+        height={bounds.height}
       />
       <rect
         width={textWidth + PADDING}
         className="fill-[royalblue]"
-        x={layer.x + layer.width / 2 - (textWidth + PADDING) / 2}
-        y={layer.y + layer.height + 10}
+        x={bounds.x + bounds.width / 2 - (textWidth + PADDING) / 2}
+        y={bounds.y + bounds.height + 10}
         height={20}
         rx={4}
       />
       <text
         ref={textRef}
-        style={{ transform: `translate(${layer.x + layer.width / 2}px, ${layer.y + layer.height + 25}px)` }}
+        style={{ transform: `translate(${bounds.x + bounds.width / 2}px, ${bounds.y + bounds.height + 25}px)` }}
         className="pointer-events-none fill-white text-[11px]"
         textAnchor="middle"
       >
-        {Math.round(layer.width)} x {Math.round(layer.height)}
+        {Math.round(bounds.width)} x {Math.round(bounds.height)}
       </text>
       {isShowingHandles && (
         <>
@@ -53,10 +54,10 @@ export default function SelectionBox({onResizeHandlePointerDown}:{onResizeHandle
             className="fill-white stroke-[royalblue] stroke-[1px]"
             width={HANDLE_WIDTH}
             height={HANDLE_WIDTH}
-            style={{ transform: `translate(${layer.x - HANDLE_WIDTH / 2}px, ${layer.y - HANDLE_WIDTH / 2}px)` }}
+            style={{ transform: `translate(${bounds.x - HANDLE_WIDTH / 2}px, ${bounds.y - HANDLE_WIDTH / 2}px)` }}
             onPointerDown={(e)=>{
               e.stopPropagation()
-              onResizeHandlePointerDown(Side.Top + Side.Left, layer)
+              onResizeHandlePointerDown(Side.Top + Side.Left, bounds)
             }}
           />
           <rect
@@ -65,11 +66,11 @@ export default function SelectionBox({onResizeHandlePointerDown}:{onResizeHandle
             width={HANDLE_WIDTH}
             height={HANDLE_WIDTH}
             style={{
-              transform: `translate(${layer.x + layer.width / 2 - HANDLE_WIDTH / 2}px, ${layer.y - HANDLE_WIDTH / 2}px)`,
+              transform: `translate(${bounds.x + bounds.width / 2 - HANDLE_WIDTH / 2}px, ${bounds.y - HANDLE_WIDTH / 2}px)`,
             }}
             onPointerDown={(e)=>{
               e.stopPropagation()
-              onResizeHandlePointerDown(Side.Top, layer)
+              onResizeHandlePointerDown(Side.Top, bounds)
             }}
           />
           <rect
@@ -78,11 +79,11 @@ export default function SelectionBox({onResizeHandlePointerDown}:{onResizeHandle
             width={HANDLE_WIDTH}
             height={HANDLE_WIDTH}
             style={{
-              transform: `translate(${layer.x + layer.width - HANDLE_WIDTH / 2}px, ${layer.y - HANDLE_WIDTH / 2}px)`,
+              transform: `translate(${bounds.x + bounds.width - HANDLE_WIDTH / 2}px, ${bounds.y - HANDLE_WIDTH / 2}px)`,
             }}
             onPointerDown={(e)=>{
               e.stopPropagation()
-              onResizeHandlePointerDown(Side.Top + Side.Right, layer)
+              onResizeHandlePointerDown(Side.Top + Side.Right, bounds)
             }}
           />
 
@@ -91,10 +92,10 @@ export default function SelectionBox({onResizeHandlePointerDown}:{onResizeHandle
             className="fill-white stroke-[royalblue] stroke-[1px]"
             width={HANDLE_WIDTH}
             height={HANDLE_WIDTH}
-            style={{ transform: `translate(${layer.x - HANDLE_WIDTH / 2}px, ${layer.y +layer.height / 2 - HANDLE_WIDTH / 2}px)` }}
+            style={{ transform: `translate(${bounds.x - HANDLE_WIDTH / 2}px, ${bounds.y +bounds.height / 2 - HANDLE_WIDTH / 2}px)` }}
             onPointerDown={(e)=>{
               e.stopPropagation()
-              onResizeHandlePointerDown(Side.Left, layer)
+              onResizeHandlePointerDown(Side.Left, bounds)
             }}
           />
 
@@ -103,10 +104,10 @@ export default function SelectionBox({onResizeHandlePointerDown}:{onResizeHandle
             className="fill-white stroke-[royalblue] stroke-[1px]"
             width={HANDLE_WIDTH}
             height={HANDLE_WIDTH}
-            style={{ transform: `translate(${layer.x - HANDLE_WIDTH / 2}px, ${layer.y +layer.height - HANDLE_WIDTH / 2}px)` }}
+            style={{ transform: `translate(${bounds.x - HANDLE_WIDTH / 2}px, ${bounds.y +bounds.height - HANDLE_WIDTH / 2}px)` }}
             onPointerDown={(e)=>{
               e.stopPropagation()
-              onResizeHandlePointerDown(Side.Bottom + Side.Left, layer)
+              onResizeHandlePointerDown(Side.Bottom + Side.Left, bounds)
             }}
           />
 
@@ -116,10 +117,10 @@ export default function SelectionBox({onResizeHandlePointerDown}:{onResizeHandle
             className="fill-white stroke-[royalblue] stroke-[1px]"
             width={HANDLE_WIDTH}
             height={HANDLE_WIDTH}
-            style={{ transform: `translate(${layer.x +layer.width- HANDLE_WIDTH / 2}px, ${layer.y +layer.height / 2 - HANDLE_WIDTH / 2}px)` }}
+            style={{ transform: `translate(${bounds.x +bounds.width- HANDLE_WIDTH / 2}px, ${bounds.y +bounds.height / 2 - HANDLE_WIDTH / 2}px)` }}
             onPointerDown={(e)=>{
               e.stopPropagation()
-              onResizeHandlePointerDown(Side.Right, layer)
+              onResizeHandlePointerDown(Side.Right, bounds)
             }}
           />
 
@@ -128,10 +129,10 @@ export default function SelectionBox({onResizeHandlePointerDown}:{onResizeHandle
             className="fill-white stroke-[royalblue] stroke-[1px]"
             width={HANDLE_WIDTH}
             height={HANDLE_WIDTH}
-            style={{ transform: `translate(${layer.x +layer.width- HANDLE_WIDTH / 2}px, ${layer.y +layer.height - HANDLE_WIDTH / 2}px)` }}
+            style={{ transform: `translate(${bounds.x +bounds.width- HANDLE_WIDTH / 2}px, ${bounds.y +bounds.height - HANDLE_WIDTH / 2}px)` }}
             onPointerDown={(e)=>{
               e.stopPropagation()
-              onResizeHandlePointerDown(Side.Bottom + Side.Right, layer)
+              onResizeHandlePointerDown(Side.Bottom + Side.Right, bounds)
             }}
           />
 
@@ -140,10 +141,10 @@ export default function SelectionBox({onResizeHandlePointerDown}:{onResizeHandle
             className="fill-white stroke-[royalblue] stroke-[1px]"
             width={HANDLE_WIDTH}
             height={HANDLE_WIDTH}
-            style={{ transform: `translate(${layer.x +layer.width / 2- HANDLE_WIDTH / 2}px, ${layer.y +layer.height - HANDLE_WIDTH / 2}px)` }}
+            style={{ transform: `translate(${bounds.x +bounds.width / 2- HANDLE_WIDTH / 2}px, ${bounds.y +bounds.height - HANDLE_WIDTH / 2}px)` }}
             onPointerDown={(e)=>{
               e.stopPropagation()
-              onResizeHandlePointerDown(Side.Bottom, layer)
+              onResizeHandlePointerDown(Side.Bottom, bounds)
             }}
           />
         </>

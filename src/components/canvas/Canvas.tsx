@@ -1,7 +1,7 @@
 "use client";
 import { useCanRedo, useCanUndo, useMutation, useMyPresence, useSelf, useStorage } from "@liveblocks/react";
 import React, { useEffect, useState } from "react";
-import { penPointsToPathLayer, pointerEventToCanvasPoint, resizeBounds, rgbToHex } from "~/utils";
+import { findIntersectionLayerWithRectangle, penPointsToPathLayer, pointerEventToCanvasPoint, resizeBounds, rgbToHex } from "~/utils";
 import LayerComponent from "./LayerComponent";
 import { nanoid } from "nanoid";
 import { LiveObject } from "@liveblocks/client";
@@ -187,17 +187,35 @@ export default function Canvas() {
     setCanvasState({ mode: CanvasMode.Pencil });
   }, [canvasState]);
 
-  useEffect(() => {
-    setTimeout(() => {
-      // waiting to load storage
-      console.log(LayerType.Rectangle);
-      insertLayer(LayerType.Rectangle, { x: 200, y: 100 });
-    }, 3000);
-  }, []);
+  // set canvas state to selection net
+  const startMultiSelection = (current:Point, origin:Point)=>{
+    if(Math.abs(current.x - origin.x) + (current.y - origin.y) > 5){
+      setCanvasState({mode:CanvasMode.SelectionNet, origin, current})
+    }
+
+  }
+
+  const updateSelectionNet = useMutation(({storage,setMyPresence},current:Point,origin:Point)=>{
+    if(layerIds){
+      const layers = storage.get("layers").toImmutable()
+      setCanvasState({mode:CanvasMode.SelectionNet, origin, current})
+       const ids = findIntersectionLayerWithRectangle(layerIds,layers,origin,current)
+       setMyPresence({selection:ids}, {addToHistory:true})
+    }
+  },[canvasState])
+
+  // useEffect(() => {
+  //   // setTimeout(() => {
+  //   //   // waiting to load storage
+  //   //   console.log(LayerType.Rectangle);
+  //   //   insertLayer(LayerType.Rectangle, { x: 200, y: 100 });
+  //   // }, 3000);
+  // }, []);
 
   const handlePointerUp = useMutation(({},e: React.PointerEvent) => {
     const point = pointerEventToCanvasPoint(e, camera);
-    if (canvasState.mode === CanvasMode.None) {
+
+    if (canvasState.mode === CanvasMode.None || canvasState.mode === CanvasMode.Pressing) {
       unselectLayers()
       setCanvasState({ mode: CanvasMode.None });
     } else if (canvasState.mode === CanvasMode.Inserting) {
@@ -229,12 +247,23 @@ export default function Canvas() {
 
     if (canvasState.mode === CanvasMode.Pencil) {
       startDrawing(point, e.pressure);
+      return;
     }
+
+    setCanvasState({mode:CanvasMode.Pressing,origin:point})
   };
 
-  const handlePointerMove = (e: React.PointerEvent) => {
+  const handlePointerMove = useMutation(({},e: React.PointerEvent) => {
     const point = pointerEventToCanvasPoint(e, camera);
-    if (canvasState.mode === CanvasMode.Dragging && canvasState.origin !== null) {
+
+    if(canvasState.mode === CanvasMode.Pressing){
+      startMultiSelection(point, canvasState.origin)
+    }
+    else if(canvasState.mode === CanvasMode.SelectionNet){
+       updateSelectionNet(point, canvasState.origin) 
+       return
+    }
+    else if (canvasState.mode === CanvasMode.Dragging && canvasState.origin !== null) {
       const deltaX = e.movementX;
       const deltaY = e.movementY;
 
@@ -251,7 +280,7 @@ export default function Canvas() {
     } else if (canvasState.mode === CanvasMode.Resizing) {
       resizeSelectedLayer(point)
     }
-  };
+  }, [canvasState, translateSelectedLayers, continueDrawing, resizeSelectedLayer,updateSelectionNet, camera]);
 
   const handleLayerPointerDown = useMutation(({ self, setMyPresence }, e: React.PointerEvent, layerId: string) => {
     if (canvasState.mode === CanvasMode.Pencil || canvasState.mode === CanvasMode.Inserting) return;
@@ -268,7 +297,7 @@ export default function Canvas() {
   }, [camera, canvasState.mode, history]);
 
   return (
-    <div className=" flex h-screen w-full">
+    <div className=" flex h-screen w-full select-none">
       
       <main className="fixed left-0 right-0 h-screen w-full overflow-y-auto">
         <div
@@ -294,7 +323,15 @@ export default function Canvas() {
               ))}
 
               <SelectionBox onResizeHandlePointerDown={onResizeHandlePointerDown} />
-
+              {canvasState.mode === CanvasMode.SelectionNet && canvasState.current && (
+                <rect
+                className="fill-blue-600/5 stroke-blue-600 stroke-[0.5]"
+                x={Math.min(canvasState.current.x, canvasState.origin.x)}
+                y={Math.min(canvasState.current.y, canvasState.origin.y)}
+                width={Math.abs(canvasState.current.x - canvasState.origin.x)}
+                height={Math.abs(canvasState.current.y - canvasState.origin.y)}
+                />
+              )}
               {pencilDraft !== null && pencilDraft.length > 0 && (
                 <Path
                   x={0}

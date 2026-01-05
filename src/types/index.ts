@@ -91,6 +91,10 @@ export type XYWH = {
 export type CanvasState =
   | {
       mode: CanvasMode.None;
+    } |{
+      mode:CanvasMode.SelectionNet;
+      origin:Point,
+      current?:Point,   
     }
   | {
       mode: CanvasMode.Inserting;
@@ -110,14 +114,19 @@ export type CanvasState =
     }|{
       mode:CanvasMode.Translating,
       current:Point
+    }|{
+      mode:CanvasMode.Pressing,
+      origin:Point,
     };
 
 export enum CanvasMode {
-  None = "None",
-  Inserting ="Inserting",
-  Dragging = "Dragging",
-  Resizing = "Resizing",
-  Pencil = "Pencil",
-  Translating = "Translating",
-  // Select layers, move them around
+  None="None",
+  Inserting="Inserting",
+  Dragging="Dragging",
+  Resizing="Resizing",
+  Pencil="Pencil",
+  Translating="Translating",
+  // Select layers, move them around,
+  SelectionNet="SelectionNet",
+  Pressing="Pressing",
 }

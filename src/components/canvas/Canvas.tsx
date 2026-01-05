@@ -1,5 +1,5 @@
 "use client";
-import { useMutation, useMyPresence, useSelf, useStorage } from "@liveblocks/react";
+import { useCanRedo, useCanUndo, useMutation, useMyPresence, useSelf, useStorage } from "@liveblocks/react";
 import React, { useEffect, useState } from "react";
 import { penPointsToPathLayer, pointerEventToCanvasPoint, resizeBounds, rgbToHex } from "~/utils";
 import LayerComponent from "./LayerComponent";
@@ -21,6 +21,7 @@ import {
 import ToolsBar from "../toolsbar/ToolsBar";
 import Path from "./Path";
 import SelectionBox from "./SelectionBox";
+import { useHistory } from "@liveblocks/react";
 
 const MAX_LAYERS = 100;
 
@@ -31,9 +32,12 @@ export default function Canvas() {
   const [canvasState, setCanvasState] = useState<CanvasState>({ mode: CanvasMode.None });
   const pencilDraft = useSelf(me => me.presence.pencilDraft);
   const presence = useMyPresence();
-
+  const history = useHistory();
+  const canUndo = useCanUndo();
+  const canRedo = useCanRedo();
 
   const onResizeHandlePointerDown = (corner:Side, initialBounds:XYWH)=>{
+    history.pause()
     setCanvasState({
       mode:CanvasMode.Resizing,
       initialBounds,
@@ -144,7 +148,7 @@ export default function Canvas() {
 
   const unselectLayers = useMutation(({self, setMyPresence})=>{
     if(self.presence.selection.length > 0){
-      setMyPresence({selection:[]})
+      setMyPresence({selection:[]}, {addToHistory:true})
     }
   },[canvasState])
 
@@ -163,7 +167,7 @@ export default function Canvas() {
     setMyPresence({
       pencilDraft: [...pencilDraft, [point.x, point.y, e.pressure]],
       // penColor:{r:34, g:32, b:46}
-    });
+    }, {addToHistory:true});
   }, [canvasState]);
 
   const insertPath = useMutation(({ storage, self, setMyPresence }) => {
@@ -205,7 +209,8 @@ export default function Canvas() {
     }else{
       setCanvasState({mode:CanvasMode.None})
     }
-  },[unselectLayers, canvasState]);
+    history.resume()
+  },[unselectLayers, canvasState, history]);
 
   const handleWheel = (e: React.WheelEvent) => {
     setCamera(camera => ({
@@ -251,6 +256,7 @@ export default function Canvas() {
   const handleLayerPointerDown = useMutation(({ self, setMyPresence }, e: React.PointerEvent, layerId: string) => {
     if (canvasState.mode === CanvasMode.Pencil || canvasState.mode === CanvasMode.Inserting) return;
 
+    history.pause()
     e.stopPropagation()
     if(!self.presence.selection.includes(layerId)){
       setMyPresence({
@@ -259,7 +265,7 @@ export default function Canvas() {
     }
     const point = pointerEventToCanvasPoint(e, camera)
     setCanvasState({mode:CanvasMode.Translating,current:point})
-  }, [camera, canvasState.mode]);
+  }, [camera, canvasState.mode, history]);
 
   return (
     <div className=" flex h-screen w-full">
@@ -306,6 +312,10 @@ export default function Canvas() {
       <ToolsBar
         canvasState={canvasState}
         setCanvasState={setCanvasState}
+        redo={()=>history.redo()}
+        undo={()=>history.undo()}
+        canRedo={canRedo}
+        canUndo={canUndo}
         zoomIn={function () {
           setCamera(camera => ({ ...camera, zoom: camera.zoom + 0.1 }));
         }}

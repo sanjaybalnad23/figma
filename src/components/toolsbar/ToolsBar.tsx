@@ -37,7 +37,7 @@ export default function ToolsBar({
       <div className="flex items-center justify-center gap-3">
         <SelectionButton
           canvasMode={canvasState.mode}
-          isActive={canvasState.mode === CanvasMode.None}
+          isActive={true}
           onClick={canvasMode =>
             setCanvasState(
               canvasMode === CanvasMode.Dragging ? { mode: canvasMode, origin: null } : { mode: canvasMode }

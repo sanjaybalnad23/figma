@@ -22,6 +22,7 @@ import ToolsBar from "../toolsbar/ToolsBar";
 import Path from "./Path";
 import SelectionBox from "./SelectionBox";
 import { useHistory } from "@liveblocks/react";
+import useDeleteLayers from "~/hooks/useDeleteLayers";
 
 const MAX_LAYERS = 100;
 
@@ -31,7 +32,7 @@ export default function Canvas() {
   const [camera, setCamera] = useState<Camera>({ x: 100, y: 100, zoom: 1 });
   const [canvasState, setCanvasState] = useState<CanvasState>({ mode: CanvasMode.None });
   const pencilDraft = useSelf(me => me.presence.pencilDraft);
-  const presence = useMyPresence();
+  const deleteLayers = useDeleteLayers()
   const history = useHistory();
   const canUndo = useCanUndo();
   const canRedo = useCanRedo();
@@ -50,7 +51,6 @@ export default function Canvas() {
     if (liveLayers.size >= MAX_LAYERS) {
       return;
     }
-
     const liveLayerIds = storage.get("layerIds");
     const layerId = nanoid();
     let layer: LiveObject<Layer> | null = null;
@@ -146,6 +146,11 @@ export default function Canvas() {
   },[canvasState])
 
 
+  const selectAllLayers = useMutation(({storage,self,setMyPresence})=>{
+    if(!layerIds?.length) return;
+    setMyPresence({selection:[...layerIds]}, {addToHistory:true})
+  },[layerIds])
+
   const unselectLayers = useMutation(({self, setMyPresence})=>{
     if(self.presence.selection.length > 0){
       setMyPresence({selection:[]}, {addToHistory:true})
@@ -204,23 +209,66 @@ export default function Canvas() {
     }
   },[canvasState])
 
-  // useEffect(() => {
-  //   // setTimeout(() => {
-  //   //   // waiting to load storage
-  //   //   console.log(LayerType.Rectangle);
-  //   //   insertLayer(LayerType.Rectangle, { x: 200, y: 100 });
-  //   // }, 3000);
-  // }, []);
+  useEffect(() => {
+    // setTimeout(() => {
+    //   // waiting to load storage
+    //   console.log(LayerType.Rectangle);
+    //   insertLayer(LayerType.Rectangle, { x: 200, y: 100 });
+    // }, 3000);
+
+    function handleKeyDown(e: KeyboardEvent) {
+      const activeElement = document.activeElement
+      const isInput = activeElement instanceof HTMLInputElement || activeElement instanceof HTMLTextAreaElement
+      if(isInput){
+        return
+      }
+
+      switch (e.key) {
+        case "Backspace":
+          deleteLayers()
+          break;
+
+        case "z":
+          if(e.ctrlKey || e.metaKey){
+            history.undo()
+            console.log("undo")
+          }
+          break
+          
+        case "y":
+          if(e.ctrlKey || e.metaKey){
+            history.redo()
+            console.log("redo")
+          }
+          break
+
+        case "a":
+          if(e.ctrlKey || e.metaKey){
+            selectAllLayers()
+          }
+          break
+      
+        default:
+          break;
+      }
+      
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [deleteLayers]);
 
   const handlePointerUp = useMutation(({},e: React.PointerEvent) => {
     const point = pointerEventToCanvasPoint(e, camera);
 
-    if (canvasState.mode === CanvasMode.None || canvasState.mode === CanvasMode.Pressing) {
+    if (canvasState.mode === CanvasMode.Inserting) {
+      insertLayer(canvasState.layerType, point);
+    } 
+    else if (canvasState.mode === CanvasMode.None || canvasState.mode === CanvasMode.Pressing) {
       unselectLayers()
       setCanvasState({ mode: CanvasMode.None });
-    } else if (canvasState.mode === CanvasMode.Inserting) {
-      insertLayer(canvasState.layerType, point);
-    } else if (canvasState.mode === CanvasMode.Dragging) {
+    }else if (canvasState.mode === CanvasMode.Dragging) {
       setCanvasState({ mode: CanvasMode.Dragging, origin: null });
     } else if (canvasState.mode === CanvasMode.Pencil) {
       insertPath();
@@ -247,6 +295,10 @@ export default function Canvas() {
 
     if (canvasState.mode === CanvasMode.Pencil) {
       startDrawing(point, e.pressure);
+      return;
+    }
+
+    if(canvasState.mode === CanvasMode.Inserting){
       return;
     }
 

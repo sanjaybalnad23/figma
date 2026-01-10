@@ -23,6 +23,7 @@ import Path from "./Path";
 import SelectionBox from "./SelectionBox";
 import { useHistory } from "@liveblocks/react";
 import useDeleteLayers from "~/hooks/useDeleteLayers";
+import SelectionTools from "./SelectionTools";
 
 const MAX_LAYERS = 100;
 
@@ -62,7 +63,7 @@ export default function Canvas() {
         y: position.y,
         height: 100,
         width: 100,
-        fill: { r: 217, g: 217, b: 217 },
+        fill: { r: 128, g: 128, b: 128 },
         stroke: { r: 217, g: 217, b: 217 },
         opacity: 100,
         cornerRadius: 0,
@@ -104,6 +105,7 @@ export default function Canvas() {
       liveLayers.set(layerId, layer);
       console.log("Layer added to storage");
       setMyPresence({ selection: [layerId] }, { addToHistory: true });
+      setCanvasState({mode:CanvasMode.None})
     }
   }, []);
 
@@ -261,7 +263,10 @@ export default function Canvas() {
 
   const handlePointerUp = useMutation(({},e: React.PointerEvent) => {
     const point = pointerEventToCanvasPoint(e, camera);
-
+ 
+    if(canvasState.mode === CanvasMode.RightClick){
+      return;
+    }
     if (canvasState.mode === CanvasMode.Inserting) {
       insertLayer(canvasState.layerType, point);
     } 
@@ -288,6 +293,11 @@ export default function Canvas() {
 
   const handlePointerDown = (e: React.PointerEvent) => {
     const point = pointerEventToCanvasPoint(e, camera);
+
+    if(canvasState.mode === CanvasMode.RightClick){
+      return;
+    }
+   
     if (canvasState.mode === CanvasMode.Dragging) {
       setCanvasState({ mode: CanvasMode.Dragging, origin: point });
       return;
@@ -344,18 +354,25 @@ export default function Canvas() {
         selection:[layerId]
       })
     }
+
+    if(e.nativeEvent.button === 2){
+      e.preventDefault()
+      setCanvasState({mode:CanvasMode.RightClick})
+      return;
+    }
     const point = pointerEventToCanvasPoint(e, camera)
     setCanvasState({mode:CanvasMode.Translating,current:point})
   }, [camera, canvasState.mode, history]);
 
   return (
-    <div className=" flex h-screen w-full select-none">
+    <div className=" flex h-screen w-full select-none" onContextMenu={(e)=>e.preventDefault()}>
       
       <main className="fixed left-0 right-0 h-screen w-full overflow-y-auto">
         <div
           className="h-full w-full touch-none"
           style={{ backgroundColor: roomColor ? rgbToHex(roomColor) : "royalblue" }}
         >
+          <SelectionTools canvasState={canvasState} camera={camera}/>
           <div style={{position:"fixed" , top:0, color:"wheat"}}>Current canvas State:{canvasState.mode}</div>
           <svg
           style={{userSelect:canvasState.mode === CanvasMode.Pencil?"none":"auto"}}

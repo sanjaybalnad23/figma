@@ -42,7 +42,7 @@ export default function SelectionBox({onResizeHandlePointerDown}:{onResizeHandle
       <text
         ref={textRef}
         style={{ transform: `translate(${bounds.x + bounds.width / 2}px, ${bounds.y + bounds.height + 25}px)` }}
-        className="pointer-events-none fill-white text-[11px]"
+        className="pointer-events-none select-none fill-white text-[11px]"
         textAnchor="middle"
       >
         {Math.round(bounds.width)} x {Math.round(bounds.height)}

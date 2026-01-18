@@ -24,12 +24,14 @@ import SelectionBox from "./SelectionBox";
 import { useHistory } from "@liveblocks/react";
 import useDeleteLayers from "~/hooks/useDeleteLayers";
 import SelectionTools from "./SelectionTools";
+import Sidebars from "../sidebars/Sidebars";
 
 const MAX_LAYERS = 100;
 
 export default function Canvas() {
   const roomColor = useStorage(root => root.roomColor);
   const layerIds = useStorage(root => root.layerIds);
+  const [leftIsMinimized, setLeftIsMinimized] = useState(false)
   const [camera, setCamera] = useState<Camera>({ x: 100, y: 100, zoom: 1 });
   const [canvasState, setCanvasState] = useState<CanvasState>({ mode: CanvasMode.None });
   const pencilDraft = useSelf(me => me.presence.pencilDraft);
@@ -431,6 +433,7 @@ export default function Canvas() {
         }}
         canZoomOut={camera.zoom > 0.5}
       />
+      <Sidebars leftIsMinimized={leftIsMinimized} setLeftIsMinimized={setLeftIsMinimized} />
     </div>
   );
 }

@@ -6,14 +6,15 @@ import { LayerType, Side, type XYWH } from "~/types";
 const PADDING = 16;
 const HANDLE_WIDTH = 10;
 
-export default function SelectionBox({onResizeHandlePointerDown}:{onResizeHandlePointerDown:(corner:Side, initialBuild:XYWH)=>void}) {
+export default function SelectionBox({ onResizeHandlePointerDown }: { onResizeHandlePointerDown: (corner: Side, initialBuild: XYWH) => void }) {
+  const FONTS = ["sans", "Inter", "Times New Roman", "Courier New", "Georgia", "Arial", "Verdana", "Comic Sans MS", "Trebuchet MS", "Gill Sans"]
   const soleLayerId = useSelf(me => (me.presence.selection.length === 1 ? me.presence.selection[0] : null));
   const isShowingHandles = useStorage(root => soleLayerId && root.layers.get(soleLayerId)?.type !== LayerType.Path);
   const textRef = useRef<SVGTextElement>(null);
   const [textWidth, setTextWidth] = useState(0);
   const bounds = useSelectionBounds()
 
-  
+
 
   useEffect(() => {
     if (!textRef.current) return;
@@ -55,7 +56,7 @@ export default function SelectionBox({onResizeHandlePointerDown}:{onResizeHandle
             width={HANDLE_WIDTH}
             height={HANDLE_WIDTH}
             style={{ transform: `translate(${bounds.x - HANDLE_WIDTH / 2}px, ${bounds.y - HANDLE_WIDTH / 2}px)` }}
-            onPointerDown={(e)=>{
+            onPointerDown={(e) => {
               e.stopPropagation()
               onResizeHandlePointerDown(Side.Top + Side.Left, bounds)
             }}
@@ -68,7 +69,7 @@ export default function SelectionBox({onResizeHandlePointerDown}:{onResizeHandle
             style={{
               transform: `translate(${bounds.x + bounds.width / 2 - HANDLE_WIDTH / 2}px, ${bounds.y - HANDLE_WIDTH / 2}px)`,
             }}
-            onPointerDown={(e)=>{
+            onPointerDown={(e) => {
               e.stopPropagation()
               onResizeHandlePointerDown(Side.Top, bounds)
             }}
@@ -81,7 +82,7 @@ export default function SelectionBox({onResizeHandlePointerDown}:{onResizeHandle
             style={{
               transform: `translate(${bounds.x + bounds.width - HANDLE_WIDTH / 2}px, ${bounds.y - HANDLE_WIDTH / 2}px)`,
             }}
-            onPointerDown={(e)=>{
+            onPointerDown={(e) => {
               e.stopPropagation()
               onResizeHandlePointerDown(Side.Top + Side.Right, bounds)
             }}
@@ -92,8 +93,8 @@ export default function SelectionBox({onResizeHandlePointerDown}:{onResizeHandle
             className="fill-white stroke-[royalblue] stroke-[1px]"
             width={HANDLE_WIDTH}
             height={HANDLE_WIDTH}
-            style={{ transform: `translate(${bounds.x - HANDLE_WIDTH / 2}px, ${bounds.y +bounds.height / 2 - HANDLE_WIDTH / 2}px)` }}
-            onPointerDown={(e)=>{
+            style={{ transform: `translate(${bounds.x - HANDLE_WIDTH / 2}px, ${bounds.y + bounds.height / 2 - HANDLE_WIDTH / 2}px)` }}
+            onPointerDown={(e) => {
               e.stopPropagation()
               onResizeHandlePointerDown(Side.Left, bounds)
             }}
@@ -104,8 +105,8 @@ export default function SelectionBox({onResizeHandlePointerDown}:{onResizeHandle
             className="fill-white stroke-[royalblue] stroke-[1px]"
             width={HANDLE_WIDTH}
             height={HANDLE_WIDTH}
-            style={{ transform: `translate(${bounds.x - HANDLE_WIDTH / 2}px, ${bounds.y +bounds.height - HANDLE_WIDTH / 2}px)` }}
-            onPointerDown={(e)=>{
+            style={{ transform: `translate(${bounds.x - HANDLE_WIDTH / 2}px, ${bounds.y + bounds.height - HANDLE_WIDTH / 2}px)` }}
+            onPointerDown={(e) => {
               e.stopPropagation()
               onResizeHandlePointerDown(Side.Bottom + Side.Left, bounds)
             }}
@@ -117,8 +118,8 @@ export default function SelectionBox({onResizeHandlePointerDown}:{onResizeHandle
             className="fill-white stroke-[royalblue] stroke-[1px]"
             width={HANDLE_WIDTH}
             height={HANDLE_WIDTH}
-            style={{ transform: `translate(${bounds.x +bounds.width- HANDLE_WIDTH / 2}px, ${bounds.y +bounds.height / 2 - HANDLE_WIDTH / 2}px)` }}
-            onPointerDown={(e)=>{
+            style={{ transform: `translate(${bounds.x + bounds.width - HANDLE_WIDTH / 2}px, ${bounds.y + bounds.height / 2 - HANDLE_WIDTH / 2}px)` }}
+            onPointerDown={(e) => {
               e.stopPropagation()
               onResizeHandlePointerDown(Side.Right, bounds)
             }}
@@ -129,8 +130,8 @@ export default function SelectionBox({onResizeHandlePointerDown}:{onResizeHandle
             className="fill-white stroke-[royalblue] stroke-[1px]"
             width={HANDLE_WIDTH}
             height={HANDLE_WIDTH}
-            style={{ transform: `translate(${bounds.x +bounds.width- HANDLE_WIDTH / 2}px, ${bounds.y +bounds.height - HANDLE_WIDTH / 2}px)` }}
-            onPointerDown={(e)=>{
+            style={{ transform: `translate(${bounds.x + bounds.width - HANDLE_WIDTH / 2}px, ${bounds.y + bounds.height - HANDLE_WIDTH / 2}px)` }}
+            onPointerDown={(e) => {
               e.stopPropagation()
               onResizeHandlePointerDown(Side.Bottom + Side.Right, bounds)
             }}
@@ -141,8 +142,8 @@ export default function SelectionBox({onResizeHandlePointerDown}:{onResizeHandle
             className="fill-white stroke-[royalblue] stroke-[1px]"
             width={HANDLE_WIDTH}
             height={HANDLE_WIDTH}
-            style={{ transform: `translate(${bounds.x +bounds.width / 2- HANDLE_WIDTH / 2}px, ${bounds.y +bounds.height - HANDLE_WIDTH / 2}px)` }}
-            onPointerDown={(e)=>{
+            style={{ transform: `translate(${bounds.x + bounds.width / 2 - HANDLE_WIDTH / 2}px, ${bounds.y + bounds.height - HANDLE_WIDTH / 2}px)` }}
+            onPointerDown={(e) => {
               e.stopPropagation()
               onResizeHandlePointerDown(Side.Bottom, bounds)
             }}

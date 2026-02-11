@@ -11,6 +11,7 @@ import { BsCircleHalf } from 'react-icons/bs';
 import { RiRoundedCorner } from 'react-icons/ri';
 import ColorPicker from './ColorPicker';
 import Dropdown from './Dropdown';
+import UserAvatar from "./UserAvatar";
 
 type UpdateLayerType = {
   x?: number;
@@ -164,7 +165,12 @@ export default function Sidebars({ leftIsMinimized, setLeftIsMinimized }: { left
           <div
             className={`fixed ${leftIsMinimized && layer ? "bottom-3 right-3 top-3 rounded-xl" : ""} ${!leftIsMinimized && !layer ? "h-screen" : ""} ${!leftIsMinimized && layer ? "bottom-0 top-0 h-screen" : ""} right-0 flex w-[240px] flex-col border-l border-gray-200 bg-white`}
           >
-            <span>Users Share here</span>
+            <div className="flex items-center justify-between p-2 ">
+              <div>
+                {me && <UserAvatar color={roomColor ? rgbToHex(roomColor) : ""} name={me.info.name} />}
+              </div>
+              <p>Share button</p>
+            </div>
             <div className="border-b border-gray-200"></div>
             {
               layer ? (

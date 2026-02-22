@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default function UserAvatar({ name, color, className }: { name: string, color: string, className?: string }) {
+export default function UserAvatar({ name, color, className }: { name: string, color?: string, className?: string }) {
 
     return (
         <div

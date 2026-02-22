@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-    provider = "mysql"
+    provider = "postgresql"
     // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
     // Further reading:
     // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
@@ -33,7 +33,7 @@ model Account {
     type                     String
     provider                 String
     providerAccountId        String
-    refresh_token            String? @db.Text
+    refresh_token            String? // @db.Text
     access_token             String? // @db.Text
     expires_at               Int?
     token_type               String?
@@ -57,13 +57,15 @@ model Session {
 model User {
     id            String    @id @default(cuid())
     name          String?
-    email         String?   @unique
+    email         String   @unique
     emailVerified DateTime?
     image         String?
+    password      String
     accounts      Account[]
     sessions      Session[]
     posts         Post[]
-    password      String
+    ownedRooms    Room[] @relation("RoomOwner")
+    roomInvites   RoomInvite[]
 }
 
 model VerificationToken {
@@ -74,3 +76,19 @@ model VerificationToken {
     @@unique([identifier, token])
 }
 
+model Room {
+    id        String      @id @default(cuid())
+    owner    User        @relation("RoomOwner", fields: [ownerId], references: [id])
+    ownerId  String
+    createdAt DateTime    @default(now())
+    title     String    @default("Untitled")
+    roomInvites RoomInvite[]
+}
+
+model RoomInvite {
+    id        String      @id @default(cuid())
+    room      Room        @relation(fields: [roomId], references: [id])
+    roomId    String
+    user     User        @relation(fields: [userId], references: [id])
+    userId   String
+}

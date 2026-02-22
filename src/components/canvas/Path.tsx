@@ -14,7 +14,7 @@ export default function Path({
   x: number;
   y: number;
   stroke?: Color;
-  fill: Color;
+  fill?: Color;
   opacity: number;
   points: number[][];
   onPointerDown?: (e: React.PointerEvent) => void;
@@ -27,28 +27,29 @@ export default function Path({
       streamline: 0.5,
     })
   );
+
   return (
     <g className="group">
       {/* Hover border */}
       <path
-      style={{ transform: `translate(${x}px, ${y}px)` }}
-      className="pointer-event-none opacity-0 group-hover:opacity-100"
-      d={pathData}
-      fill="none"
-      stroke="#0b99ff"
-      strokeWidth={4}
-      strokeLinecap="round"
-      strokeLinejoin="round"
+        style={{ transform: `translate(${x}px, ${y}px)` }}
+        className="pointer-event-none opacity-0 group-hover:opacity-100"
+        d={pathData}
+        fill="none"
+        stroke="#0b99ff"
+        strokeWidth={4}
+        strokeLinecap="round"
+        strokeLinejoin="round"
       ></path>
-    <path
-      onPointerDown={onPointerDown}
-      style={{ transform: `translate(${x}px, ${y}px)` }}
-      d={pathData}
-      fill={rgbToHex(fill)}
-      stroke={stroke ? rgbToHex(stroke) : "#CCC"}
-      opacity={opacity}
-      strokeWidth={1}
-    />
+      <path
+        onPointerDown={onPointerDown}
+        style={{ transform: `translate(${x}px, ${y}px)` }}
+        d={pathData}
+        fill={fill ? rgbToHex(fill) : "green"}
+        stroke={stroke ? rgbToHex(stroke) : "#CCC"}
+        opacity={opacity}
+        strokeWidth={1}
+      />
     </g>
   );
 }

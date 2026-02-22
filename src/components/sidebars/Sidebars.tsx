@@ -1,6 +1,6 @@
 "use client"
 import { useMutation, useOthers, useSelf, useStorage } from "@liveblocks/react";
-import { hexToRbg, rgbToHex } from "~/utils";
+import { connectionIdToColor, hexToRbg, rgbToHex } from "~/utils";
 import Link from 'next/link';
 import Image from 'next/image';
 import { PiSidebarSimpleThin } from 'react-icons/pi';
@@ -59,7 +59,7 @@ export default function Sidebars({ leftIsMinimized, setLeftIsMinimized }: { left
     "900"
   ]
   const me = useSelf()
-  const otherUsers = useOthers()
+  const others = useOthers()
 
 
   const selectedLayer = useSelf((me) => {
@@ -165,10 +165,15 @@ export default function Sidebars({ leftIsMinimized, setLeftIsMinimized }: { left
           <div
             className={`fixed ${leftIsMinimized && layer ? "bottom-3 right-3 top-3 rounded-xl" : ""} ${!leftIsMinimized && !layer ? "h-screen" : ""} ${!leftIsMinimized && layer ? "bottom-0 top-0 h-screen" : ""} right-0 flex w-[240px] flex-col border-l border-gray-200 bg-white`}
           >
-            <div className="flex items-center justify-between p-2 ">
-              <div>
-                {me && <UserAvatar color={roomColor ? rgbToHex(roomColor) : ""} name={me.info.name} />}
+            <div className="flex items-center justify-between pr-2 ">
+              <div className="max-36 flex w-full gap-2 overflow-x-scroll p-3 text-xs">
+                {me && <UserAvatar color={connectionIdToColor(me.connectionId)} name={me.info.name} />}
+
+                {others && others.map(other => (
+                  <UserAvatar key={other.connectionId} color={connectionIdToColor(other.connectionId)} name={other.info.name} />
+                ))}
               </div>
+
               <p>Share button</p>
             </div>
             <div className="border-b border-gray-200"></div>

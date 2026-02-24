@@ -1,4 +1,6 @@
 
+import CreateRoom from "~/components/dashboard/CreateRoom";
+import RoomsView from "~/components/dashboard/RoomsView";
 import UserMenu from "~/components/dashboard/UserMenu";
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
@@ -30,11 +32,11 @@ export default async function Page() {
           <h2 className="text-[13px]">Recents</h2>
         </div>
         <div className="flex h-full flex-col gap-10 p-8">
-          {/* <CreateRoom />
+          <CreateRoom />
           <RoomsView
             ownedRooms={user.ownedRooms}
             roomInvites={user.roomInvites.map((x) => x.room)}
-          /> */}
+          />
         </div>
       </div>
     </div>

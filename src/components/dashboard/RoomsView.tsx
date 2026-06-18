@@ -4,6 +4,7 @@ import type { Room } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import ConfirmationModal from "./ConfirmationModal";
+import { deleteRoom, updateRoomTitle } from "~/app/actions/room.action";
 
 
 const PASTEL_COLORS = [
@@ -20,7 +21,7 @@ const PASTEL_COLORS = [
 
 export default function RoomsView({ ownedRooms, roomInvites }: { ownedRooms: Room[], roomInvites: Room[] }) {
   {
-    const [viewMode, setViewMode] = useState("owns");
+    const [viewMode, setViewMode] = useState<"owns"|"shared">("owns");
     const [selected, setSelected] = useState<string | null>(null);
     const router = useRouter();
     const outerDivRef = useRef<HTMLDivElement>(null);
@@ -123,17 +124,17 @@ function SingleRoom({
     if (event.key === "Enter") {
       event.preventDefault();
       setIsEditing(false);
-      // await updateRoomTitle(editedTitle, id);
+      await updateRoomTitle(editedTitle, id);
     }
   };
 
   const handleBlur = async () => {
     setIsEditing(false);
-    // await updateRoomTitle(editedTitle, id);
+    await updateRoomTitle(editedTitle, id);
   };
 
   const confirmDelete = async () => {
-    // await deleteRoom(id);
+    await deleteRoom(id);
     setShowConfirmationModal(false);
   };
 

@@ -1,29 +1,172 @@
-# Create T3 App
+# Figma Clone
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+A real-time collaborative design canvas built with Next.js, Liveblocks, and PostgreSQL. Create design rooms, draw shapes, add text, sketch with a pencil tool, and edit together with live multiplayer sync.
 
-## What's next? How do I make an app with this?
+![Next.js](https://img.shields.io/badge/Next.js-16-black)
+![React](https://img.shields.io/badge/React-19-61dafb)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6)
+![Liveblocks](https://img.shields.io/badge/Liveblocks-3-6366f1)
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+## Features
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+- **Real-time collaboration** — Live cursors, presence, and instant layer sync via Liveblocks
+- **Design canvas** — Rectangles, ellipses, text, and freehand paths
+- **Layer panel** — Select, reorder, and edit layer properties (position, size, colors, opacity, fonts)
+- **Room management** — Create, rename, and delete design files from a dashboard
+- **Sharing** — Invite collaborators by email to shared rooms
+- **Auth** — Email/password sign-up and sign-in with NextAuth (JWT + credentials)
+- **Undo / redo** — Canvas history for design edits
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+## Tech stack
 
-## Learn More
+| Layer | Technology |
+| --- | --- |
+| Framework | [Next.js 16](https://nextjs.org) (App Router) |
+| Language | [TypeScript](https://www.typescriptlang.org) |
+| Styling | [Tailwind CSS 4](https://tailwindcss.com) |
+| Database | [PostgreSQL](https://www.postgresql.org) + [Prisma](https://www.prisma.io) |
+| Auth | [NextAuth.js v5](https://authjs.dev) (credentials, JWT) |
+| Realtime | [Liveblocks](https://liveblocks.io) |
+| Drawing | [perfect-freehand](https://github.com/steveruizok/perfect-freehand) |
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+## Prerequisites
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+- [Node.js](https://nodejs.org) 20+
+- [pnpm](https://pnpm.io) 10+
+- PostgreSQL database (local or hosted)
+- [Liveblocks](https://liveblocks.io) account (free tier works)
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+## Getting started
 
-## How do I deploy this?
+### 1. Clone and install
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+```bash
+git clone <your-repo-url>
+cd figma
+pnpm install
+```
+
+### 2. Environment variables
+
+Copy the example file and fill in your values:
+
+```bash
+cp .env.example .env
+```
+
+| Variable | Description |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL connection string |
+| `AUTH_SECRET` | Secret for NextAuth JWT signing. Generate with `npx auth secret` |
+| `LIVEBLOCKS_PUBLIC_KEY` | Public key from the [Liveblocks dashboard](https://liveblocks.io/dashboard) |
+| `LIVEBLOCKS_SECRET_KEY` | Secret key from the Liveblocks dashboard |
+
+Example `.env`:
+
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/figma"
+AUTH_SECRET="your-generated-secret"
+LIVEBLOCKS_PUBLIC_KEY="pk_dev_..."
+LIVEBLOCKS_SECRET_KEY="sk_dev_..."
+```
+
+### 3. Set up the database
+
+```bash
+pnpm db:push
+```
+
+Or run migrations if you prefer:
+
+```bash
+pnpm db:migrate
+```
+
+### 4. Start the dev server
+
+```bash
+pnpm dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+## Scripts
+
+| Command | Description |
+| --- | --- |
+| `pnpm dev` | Start development server (Turbopack) |
+| `pnpm build` | Production build |
+| `pnpm start` | Run production server |
+| `pnpm check` | Lint + typecheck |
+| `pnpm lint` | Run ESLint |
+| `pnpm typecheck` | Run TypeScript compiler |
+| `pnpm db:push` | Push Prisma schema to the database |
+| `pnpm db:migrate` | Run Prisma migrations |
+| `pnpm db:studio` | Open Prisma Studio |
+| `pnpm format:write` | Format code with Prettier |
+
+## Project structure
+
+```
+src/
+├── app/
+│   ├── page.tsx              # Landing page
+│   ├── signin/               # Login
+│   ├── signup/               # Registration
+│   ├── dashboard/            # Room list & editor routes
+│   ├── actions/              # Server actions (auth, rooms)
+│   └── api/
+│       ├── auth/             # NextAuth handlers
+│       └── liveblocks-auth/  # Liveblocks session auth
+├── components/
+│   ├── canvas/               # Canvas, layers, selection tools
+│   ├── dashboard/            # Room grid, create room, user menu
+│   ├── liveblocks/           # Liveblocks room provider
+│   ├── sidebars/             # Layers panel, properties, share menu
+│   └── toolsbar/             # Toolbar (shapes, pencil, zoom, undo)
+├── hooks/                    # Canvas hooks
+├── server/
+│   ├── auth/                 # NextAuth config
+│   └── db.ts                 # Prisma client
+├── types/                    # Layer & canvas types
+└── proxy.ts                  # Auth guard for /dashboard routes
+prisma/
+└── schema.prisma             # User, Room, RoomInvite models
+```
+
+## How it works
+
+### Authentication
+
+Users register with email and password (hashed with bcrypt). NextAuth issues a JWT session. Dashboard routes are protected — unauthenticated users are redirected to `/signin`.
+
+### Rooms
+
+Each design file is a **Room** owned by a user. Rooms are stored in PostgreSQL; canvas state lives in Liveblocks storage keyed as `room:{roomId}`.
+
+### Collaboration
+
+When a user opens a room, the app:
+
+1. Verifies they own the room or have a **RoomInvite**
+2. Requests a Liveblocks session from `/api/liveblocks-auth`
+3. Syncs layers, cursors, and presence in real time
+
+### Canvas
+
+Layers (rectangles, ellipses, text, paths) are stored as Liveblocks `LiveMap` / `LiveObject` structures. The sidebar exposes property editing; the toolbar handles creation tools, zoom, and history.
+
+## Deployment
+
+This app works well on [Vercel](https://vercel.com) with a hosted PostgreSQL provider (e.g. [Neon](https://neon.tech), [Supabase](https://supabase.com), or [Railway](https://railway.app)).
+
+1. Push your repo and import the project in Vercel
+2. Add all environment variables from `.env.example`
+3. Run `pnpm db:migrate` against your production database
+4. Deploy
+
+For Docker or other hosts, set `SKIP_ENV_VALIDATION=1` during build if env vars are injected at runtime.
+
+## License
+
+Private — see repository settings for license details.

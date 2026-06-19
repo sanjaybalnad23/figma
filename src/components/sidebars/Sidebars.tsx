@@ -13,6 +13,7 @@ import ColorPicker from "./ColorPicker";
 import Dropdown from "./Dropdown";
 import UserAvatar from "./UserAvatar";
 import type { User } from "@prisma/client";
+import ShareMenu from "./ShareMenu";
 
 type UpdateLayerType = {
   x?: number;
@@ -168,7 +169,7 @@ export default function Sidebars({
                 ))}
             </div>
 
-            <p>Share button</p>
+            <ShareMenu roomId={roomId} othersWithAccessToRoom={othersWithAccessToRoom} />
           </div>
           <div className="border-b border-gray-200"></div>
           {layer ? (

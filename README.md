@@ -7,6 +7,9 @@ A real-time collaborative design canvas built with Next.js, Liveblocks, and Post
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6)
 ![Liveblocks](https://img.shields.io/badge/Liveblocks-3-6366f1)
 
+## Live demo
+- https://figma-two-puce.vercel.app/
+
 ## Features
 
 - **Real-time collaboration** — Live cursors, presence, and instant layer sync via Liveblocks
@@ -41,7 +44,7 @@ A real-time collaborative design canvas built with Next.js, Liveblocks, and Post
 ### 1. Clone and install
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/sanjaybalnad23/figma
 cd figma
 pnpm install
 ```
